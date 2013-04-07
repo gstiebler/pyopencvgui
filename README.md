@@ -8,5 +8,6 @@ packages:
 opencv-python
 opencv-dev
 glade
+scons
 
 python-gtk2-dev on Kubuntu
