@@ -5,6 +5,10 @@ import gtk
 import gtk.glade
 import cv2
 import numpy
+import ctypes
+
+from ctypes import *
+mylib = cdll.LoadLibrary("./libmyextension.so") 
 
 class FuncWindow:
 
@@ -60,25 +64,35 @@ class FuncWindow:
             
     def execute(self):
         params_str = ''
-        for widget in self.widget_params:
-            if type(widget) is gtk.HScale:
-                params_str += '%d, ' % widget.get_value()
-            elif type(widget) is gtk.ComboBox:
-                params_str += 'cv2.%s, ' % widget.get_active_text()
-        params_str = params_str[:-2]
-        func_str = 'result = cv2.%s(gray_image, %s)' % (self.func_str, params_str)
         
         src_image = self.output_window.get_src_image()
         gray_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY)
+        
+        func_module = self.func_str.split('.')[0]
+        if func_module == "cv2":
+            for widget in self.widget_params:
+                if type(widget) is gtk.HScale:
+                    params_str += '%d, ' % widget.get_value()
+                elif type(widget) is gtk.ComboBox:
+                    params_str += 'cv2.%s, ' % widget.get_active_text()
+            params_str = params_str[:-2]
+            
+            func_str = 'result = %s(gray_image, %s)' % (self.func_str, params_str)
+        elif func_module == "mylib":
+            for widget in self.widget_params:
+                if type(widget) is gtk.HScale:
+                    params_str += 'c_int(%d), ' % widget.get_value()
+            params_str = params_str[:-2]
+            
+            tmp_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY)
+            arr1 = gray_image.ctypes.data_as(ctypes.POINTER(ctypes.c_ubyte))
+            arr2 = tmp_image.ctypes.data_as(ctypes.POINTER(ctypes.c_ubyte))
+            func_str = '%s(arr1, arr2, c_int(src_image.shape[0]), c_int(src_image.shape[1]), %s)' % (self.func_str, params_str)
+            
         print func_str
         exec func_str
         
-        if type(result) is tuple:
-            dst_image = result[1]
-        else:
-            dst_image = result
-        
-        colorImage = cv2.cvtColor(dst_image, cv2.COLOR_GRAY2BGR)
+        colorImage = cv2.cvtColor(tmp_image, cv2.COLOR_GRAY2BGR)
         self.output_window.setCurrentImage(colorImage)
        
     def execute_button_callback(self, widget, data=None):

@@ -38,10 +38,9 @@
               <widget class="GtkTextView" id="newFuncTextView">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="text" translatable="yes">threshold
+                <property name="text" translatable="yes">mylib.myfunc
 thresh:int: value = 50, lower = 0, upper = 255
-maxval:int: value = 50, lower = 0, upper = 255
-type:choice: THRESH_BINARY, THRESH_BINARY_INV, THRESH_TRUNC, THRESH_TOZERO</property>
+</property>
               </widget>
               <packing>
                 <property name="expand">True</property>
