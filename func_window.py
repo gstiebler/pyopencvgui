@@ -89,7 +89,6 @@ class FuncWindow:
             arr2 = tmp_image.ctypes.data_as(ctypes.POINTER(ctypes.c_ubyte))
             func_str = '%s(arr1, arr2, c_int(src_image.shape[0]), c_int(src_image.shape[1]), %s)' % (self.func_str, params_str)
             
-        print func_str
         exec func_str
         
         colorImage = cv2.cvtColor(tmp_image, cv2.COLOR_GRAY2BGR)

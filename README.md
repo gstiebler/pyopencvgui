@@ -5,8 +5,8 @@ Works on Ubuntu 12.10
 
 packages:
 
-opencv-python
-opencv-dev
+python-opencv
+libopencv-dev
 glade
 scons
 
