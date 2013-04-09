@@ -28,7 +28,7 @@ int myfunc(uchar *srcImgData, uchar *dstImgData, int height, int width, int thre
     return 0;  
 }
 
-static uchar vX[8], vY[8];
+static uchar vX[16], vY[16];
 
 void initDirections()
 {
@@ -41,6 +41,15 @@ void initDirections()
     vX[6] = -1;
     vX[7] = -1;
 
+    vX[8] = 0;
+    vX[9] = 1;
+    vX[10] = 1;
+    vX[11] = 1;
+    vX[12] = 0;
+    vX[13] = -1;
+    vX[14] = -1;
+    vX[15] = -1;
+
     vY[0] = -1;
     vY[1] = -1;
     vY[2] = 0;
@@ -49,6 +58,15 @@ void initDirections()
     vY[5] = 1;
     vY[6] = 0;
     vY[7] = -1;
+
+    vY[8] = -1;
+    vY[9] = -1;
+    vY[10] = 0;
+    vY[11] = 1;
+    vY[12] = 1;
+    vY[13] = 1;
+    vY[14] = 0;
+    vY[15] = -1;
 }
 
 
@@ -56,13 +74,11 @@ uchar findCWEdge(Image &src, int xIni, int yIni, uchar startIndex)
 {
     uchar selfValue = src.pix(xIni, yIni);
 
-    int index;
     // finds white pixel
     int whiteIndex;
-    for(int i(0); i < 8; ++i)
+    for(int i(startIndex); i < ( startIndex + 8 ); ++i)
     {
-        index = (startIndex + i) % 8;
-        uchar currValue = src.pix(xIni + vX[index], yIni + vY[index]);
+        uchar currValue = src.pix(xIni + vX[i], yIni + vY[i]);
         if(currValue > selfValue)
         {
             whiteIndex = index;
@@ -71,14 +87,13 @@ uchar findCWEdge(Image &src, int xIni, int yIni, uchar startIndex)
     }
 
     // finds black pixel
-    startIndex = whiteIndex + 1;
+    startIndex = (whiteIndex + 1) % 8;
     int blackIndex;
-    for(int i(0); i < 8; ++i)
+    for(int i(startIndex); i < ( startIndex + 8 ); ++i)
     {
-        index = (startIndex + i) % 8;
-        uchar currValue = src.pix(xIni + vX[index], yIni + vY[index]);
+        uchar currValue = src.pix(xIni + vX[i], yIni + vY[i]);
         if(currValue <= selfValue)
-            return index;
+            return i % 8;
     }
 }
 
@@ -91,11 +106,13 @@ void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width,
 
     initDirections();
 
-    int blackIndex;
+    int nextIndex;
     for(int y(1); y < src.getHeight() - 1; ++y)
     {
         for(int x(1); x < src.getWidth() - 1; ++x)
         {      
+            nextIndex = 0;
+            for(int i(0)
             blackIndex = findCWEdge(src, x, y, 0); 
 	    }
     }
