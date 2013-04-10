@@ -1,5 +1,8 @@
 #include <iostream>
 #include <stdio.h>
+#include <stdlib.h>
+#include <memory.h>
+#include <math.h>
 
 #include "Image.h"
 
@@ -28,9 +31,7 @@ int myfunc(uchar *srcImgData, uchar *dstImgData, int height, int width, int thre
     return 0;  
 }
 
-static uchar vX[16], vY[16];
-
-void initDirections()
+void initDirections(char vX[16], char vY[16], char vXi[16], char vYi[16])
 {
     vX[0] = 0;
     vX[1] = 1;
@@ -40,15 +41,7 @@ void initDirections()
     vX[5] = -1;
     vX[6] = -1;
     vX[7] = -1;
-
-    vX[8] = 0;
-    vX[9] = 1;
-    vX[10] = 1;
-    vX[11] = 1;
-    vX[12] = 0;
-    vX[13] = -1;
-    vX[14] = -1;
-    vX[15] = -1;
+    memcpy( &vX[8], vX, 8 * sizeof(char));
 
     vY[0] = -1;
     vY[1] = -1;
@@ -58,30 +51,34 @@ void initDirections()
     vY[5] = 1;
     vY[6] = 0;
     vY[7] = -1;
+    memcpy( &vY[8], vY, 8 * sizeof(char));
 
-    vY[8] = -1;
-    vY[9] = -1;
-    vY[10] = 0;
-    vY[11] = 1;
-    vY[12] = 1;
-    vY[13] = 1;
-    vY[14] = 0;
-    vY[15] = -1;
+    for(int i(0); i < 16; ++i)
+    {
+        vXi[i] = vX[15 - i];
+        vYi[i] = vY[15 - i];
+    }
 }
 
 
-uchar findCWEdge(Image &src, int xIni, int yIni, uchar startIndex)
+uchar findEdge(Image &src, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex)
 {
     uchar selfValue = src.pix(xIni, yIni);
 
     // finds white pixel
-    int whiteIndex;
+    int whiteIndex = 0;
+    int xIndex, yIndex;
     for(int i(startIndex); i < ( startIndex + 8 ); ++i)
     {
-        uchar currValue = src.pix(xIni + vX[i], yIni + vY[i]);
+        xIndex = xIni + vX[i];
+        yIndex = yIni + vY[i];
+        if( xIndex == 0 || yIndex == 0 || xIndex == src.getWidth() || yIndex == src.getHeight() )
+            break;
+
+        uchar currValue = src.pix( xIndex, yIndex );
         if(currValue > selfValue)
         {
-            whiteIndex = index;
+            whiteIndex = i % 8;
             break;
         }
     }
@@ -91,7 +88,12 @@ uchar findCWEdge(Image &src, int xIni, int yIni, uchar startIndex)
     int blackIndex;
     for(int i(startIndex); i < ( startIndex + 8 ); ++i)
     {
-        uchar currValue = src.pix(xIni + vX[i], yIni + vY[i]);
+        xIndex = xIni + vX[i];
+        yIndex = yIni + vY[i];
+        if( xIndex == 0 || yIndex == 0 || xIndex == src.getWidth() || yIndex == src.getHeight() )
+            break;
+
+        uchar currValue = src.pix(xIndex, yIndex);
         if(currValue <= selfValue)
             return i % 8;
     }
@@ -104,16 +106,62 @@ void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width,
     Image src(srcImgData, width, height);
     Image dst(dstImgData, width, height);
 
-    initDirections();
+    char vX[16], vY[16], vXi[16], vYi[16];
+    initDirections(vX, vY, vXi, vYi);
 
-    int nextIndex;
+    int nextIndex, blackIndex;
+    char currX, currY;
+    int lastLeftX, lastLeftY, lastRightX, lastRightY;
+    int difX, difY;
+    
+    double tan1, tan2;
     for(int y(1); y < src.getHeight() - 1; ++y)
     {
         for(int x(1); x < src.getWidth() - 1; ++x)
         {      
             nextIndex = 0;
-            for(int i(0)
-            blackIndex = findCWEdge(src, x, y, 0); 
+            currX = x;
+            currY = y;
+            for(int i(0); i < numPixelsString; ++i)
+            {
+                // clockwise
+                blackIndex = findEdge(src, currX, currY, vX, vY, nextIndex); 
+                currX += vX[blackIndex];
+                currY += vY[blackIndex];
+            }
+            lastLeftX = currX;
+            lastLeftY = currY;
+
+            nextIndex = 0;
+            for(int i(0); i < numPixelsString; ++i)
+            {
+                // counter-clockwise
+                nextIndex = findEdge(src, currX, currY, vXi, vYi, nextIndex); 
+                currX += vX[blackIndex];
+                currY += vY[blackIndex];
+            }
+            lastRightX = currX;
+            lastRightY = currY;
+
+            
+            difX = abs(lastRightX - x);
+            difY = abs(lastRightY - y);
+            tan1 = 0.0;
+            if(difY != 0)
+                tan1 = difX * 1.0 / difY;
+
+
+            
+            difX = abs(lastLeftX - x);
+            difY = abs(lastLeftY - y);
+            tan2 = 0.0;
+            if(difY != 0)
+                tan2 = difX * 1.0 / difY;
+
+            if( fabs(tan1 - tan2) > 90.0)
+                dst.pix(x, y) = 0;
+            else
+                dst.pix(x, y) = 255;
 	    }
     }
   
