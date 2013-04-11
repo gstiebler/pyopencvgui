@@ -152,16 +152,14 @@ void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width,
 
 
             
-            difX = abs(lastLeftX - x);
-            difY = abs(lastLeftY - y);
+            difX = lastLeftX - x;
+            difY = lastLeftY - y;
             tan2 = 0.0;
             if(difY != 0)
                 tan2 = difX * 1.0 / difY;
 
-            if( fabs(tan1 - tan2) > 90.0)
-                dst.pix(x, y) = 0;
-            else
-                dst.pix(x, y) = 255;
+            double difTans = fabs(tan1 - tan2);
+            dst.pix(x, y) = (int) difTans;
 	    }
     }
   
