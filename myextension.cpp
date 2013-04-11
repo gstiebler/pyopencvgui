@@ -64,6 +64,7 @@ void initDirections(char vX[16], char vY[16], char vXi[16], char vYi[16])
 uchar findEdge(Image &src, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex)
 {
     uchar selfValue = src.pix(xIni, yIni);
+    printf("findEdge xIni: %d, yIni: %d, selfValue: %d\n", xIni, yIni, selfValue);
 
     // finds white pixel
     int whiteIndex = 0;
@@ -76,12 +77,15 @@ uchar findEdge(Image &src, int xIni, int yIni, char vX[16], char vY[16], uchar s
             break;
 
         uchar currValue = src.pix( xIndex, yIndex );
+
+        printf("i: %d, xIndex: %d, yIndex: %d, currValue: %d\n", i, xIndex, yIndex, currValue);
         if(currValue > selfValue)
         {
             whiteIndex = i % 8;
             break;
         }
-    }
+    }    
+    printf("whiteIndex: %d\n", whiteIndex);
 
     // finds black pixel
     startIndex = (whiteIndex + 1) % 8;
@@ -93,6 +97,7 @@ uchar findEdge(Image &src, int xIni, int yIni, char vX[16], char vY[16], uchar s
             break;
 
         uchar currValue = src.pix(xIndex, yIndex);
+        printf("i: %d, xIndex: %d, yIndex: %d, currValue: %d\n", i, xIndex, yIndex, currValue);
         if(currValue <= selfValue)
             return i % 8;
     }
@@ -105,6 +110,7 @@ void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width,
     Image src(srcImgData, width, height);
     Image dst(dstImgData, width, height);
 
+    printf("Inicio -------\n\n\n\n ------------- "); 
     char vX[16], vY[16], vXi[16], vYi[16];
     initDirections(vX, vY, vXi, vYi);
 
@@ -129,7 +135,8 @@ void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width,
             for(int i(0); i < numPixelsString; ++i)
             {
                 // clockwise
-                blackIndex = findEdge(src, currX, currY, vX, vY, nextIndex); 
+                blackIndex = findEdge(src, currX, currY, vX, vY, nextIndex);
+                printf("blackIndex: %d\n", blackIndex); 
                 currX += vX[blackIndex];
                 currY += vY[blackIndex];
                 dst.pix(currX, currY) = 0;
@@ -142,6 +149,7 @@ void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width,
             {
                 // counter-clockwise
                 nextIndex = findEdge(src, currX, currY, vXi, vYi, nextIndex); 
+                printf("blackIndex: %d\n", blackIndex); 
                 currX += vXi[blackIndex];
                 currY += vYi[blackIndex];
                 dst.pix(currX, currY) = 0;
