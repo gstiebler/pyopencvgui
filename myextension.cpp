@@ -85,7 +85,6 @@ uchar findEdge(Image &src, int xIni, int yIni, char vX[16], char vY[16], uchar s
 
     // finds black pixel
     startIndex = (whiteIndex + 1) % 8;
-    int blackIndex;
     for(int i(startIndex); i < ( startIndex + 8 ); ++i)
     {
         xIndex = xIni + vX[i];
@@ -101,7 +100,7 @@ uchar findEdge(Image &src, int xIni, int yIni, char vX[16], char vY[16], uchar s
 
 
 
-void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width, int numPixelsString) 
+void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width, int numPixelsString, int xD, int yD) 
 {
     Image src(srcImgData, width, height);
     Image dst(dstImgData, width, height);
@@ -119,6 +118,11 @@ void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width,
     {
         for(int x(1); x < src.getWidth() - 1; ++x)
         {      
+            if( x != xD || y != yD )
+            {
+                dst.pix(x, y) = 0xFF;   
+                continue;
+            }
             nextIndex = 0;
             currX = x;
             currY = y;
@@ -128,6 +132,7 @@ void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width,
                 blackIndex = findEdge(src, currX, currY, vX, vY, nextIndex); 
                 currX += vX[blackIndex];
                 currY += vY[blackIndex];
+                dst.pix(currX, currY) = 0;
             }
             lastLeftX = currX;
             lastLeftY = currY;
@@ -137,8 +142,9 @@ void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width,
             {
                 // counter-clockwise
                 nextIndex = findEdge(src, currX, currY, vXi, vYi, nextIndex); 
-                currX += vX[blackIndex];
-                currY += vY[blackIndex];
+                currX += vXi[blackIndex];
+                currY += vYi[blackIndex];
+                dst.pix(currX, currY) = 0;
             }
             lastRightX = currX;
             lastRightY = currY;
