@@ -63,8 +63,6 @@ void initDirections(char vX[16], char vY[16], char vXi[16], char vYi[16])
 
 uchar findEdge(Image &src, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex, uchar selfValue)
 {
-    printf("findEdge xIni: %d, yIni: %d, selfValue: %d\n", xIni, yIni, selfValue);
-
     // finds white pixel
     int whiteIndex = 0;
     int xIndex, yIndex;
@@ -77,14 +75,12 @@ uchar findEdge(Image &src, int xIni, int yIni, char vX[16], char vY[16], uchar s
 
         uchar currValue = src.pix( xIndex, yIndex );
 
-        printf("i: %d, xIndex: %d, yIndex: %d, currValue: %d\n", i, xIndex, yIndex, currValue);
         if(currValue > selfValue)
         {
             whiteIndex = i % 8;
             break;
         }
     }    
-    printf("whiteIndex: %d\n", whiteIndex);
 
     // finds black pixel
     startIndex = (whiteIndex + 1) % 8;
@@ -96,7 +92,6 @@ uchar findEdge(Image &src, int xIni, int yIni, char vX[16], char vY[16], uchar s
             break;
 
         uchar currValue = src.pix(xIndex, yIndex);
-        printf("i: %d, xIndex: %d, yIndex: %d, currValue: %d\n", i, xIndex, yIndex, currValue);
         if(currValue <= selfValue)
             return i % 8;
     }
@@ -104,12 +99,11 @@ uchar findEdge(Image &src, int xIni, int yIni, char vX[16], char vY[16], uchar s
 
 
 
-void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width, int numPixelsString, int xD, int yD) 
+void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width, int numPixelsString) 
 {
     Image src(srcImgData, width, height);
     Image dst(dstImgData, width, height);
 
-    printf("Inicio -------\n\n\n\n ------------- \n"); 
     char vX[16], vY[16], vXi[16], vYi[16];
     initDirections(vX, vY, vXi, vYi);
 
@@ -125,38 +119,26 @@ void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width,
         {      
             
             uchar selfValue = src.pix(x, y);
-            if( x != xD || y != yD )
-            {
-                dst.pix(x, y) = 0xFF;   
-                continue;
-            }
             nextIndex = 0;
             currX = x;
             currY = y;
             for(int i(0); i < numPixelsString; ++i)
             {
                 // clockwise
-                blackIndex = findEdge(src, currX, currY, vX, vY, nextIndex, selfValue);
-                printf("blackIndex: %d\n", blackIndex); 
                 currX += vX[blackIndex];
                 currY += vY[blackIndex];
-                dst.pix(currX, currY) = 0;
                 nextIndex = (blackIndex + 4) % 8;
             }
             lastLeftX = currX;
             lastLeftY = currY;
-
-            printf("segunda rodada ---\n ------------- \n"); 
 
             nextIndex = 0;
             for(int i(0); i < numPixelsString; ++i)
             {
                 // counter-clockwise
                 blackIndex = findEdge(src, currX, currY, vXi, vYi, nextIndex, selfValue); 
-                printf("blackIndex: %d\n", blackIndex); 
                 currX += vXi[blackIndex];
                 currY += vYi[blackIndex];
-                dst.pix(currX, currY) = 0;
                 nextIndex = (blackIndex + 4) % 8;
             }
             lastRightX = currX;
@@ -168,8 +150,6 @@ void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width,
             tan1 = 0.0;
             if(difY != 0)
                 tan1 = difX * 1.0 / difY;
-
-
             
             difX = lastLeftX - x;
             difY = lastLeftY - y;
