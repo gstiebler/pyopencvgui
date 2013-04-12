@@ -61,9 +61,8 @@ void initDirections(char vX[16], char vY[16], char vXi[16], char vYi[16])
 }
 
 
-uchar findEdge(Image &src, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex)
+uchar findEdge(Image &src, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex, uchar selfValue)
 {
-    uchar selfValue = src.pix(xIni, yIni);
     printf("findEdge xIni: %d, yIni: %d, selfValue: %d\n", xIni, yIni, selfValue);
 
     // finds white pixel
@@ -110,7 +109,7 @@ void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width,
     Image src(srcImgData, width, height);
     Image dst(dstImgData, width, height);
 
-    printf("Inicio -------\n\n\n\n ------------- "); 
+    printf("Inicio -------\n\n\n\n ------------- \n"); 
     char vX[16], vY[16], vXi[16], vYi[16];
     initDirections(vX, vY, vXi, vYi);
 
@@ -124,6 +123,8 @@ void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width,
     {
         for(int x(1); x < src.getWidth() - 1; ++x)
         {      
+            
+            uchar selfValue = src.pix(x, y);
             if( x != xD || y != yD )
             {
                 dst.pix(x, y) = 0xFF;   
@@ -135,24 +136,28 @@ void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width,
             for(int i(0); i < numPixelsString; ++i)
             {
                 // clockwise
-                blackIndex = findEdge(src, currX, currY, vX, vY, nextIndex);
+                blackIndex = findEdge(src, currX, currY, vX, vY, nextIndex, selfValue);
                 printf("blackIndex: %d\n", blackIndex); 
                 currX += vX[blackIndex];
                 currY += vY[blackIndex];
                 dst.pix(currX, currY) = 0;
+                nextIndex = (blackIndex + 4) % 8;
             }
             lastLeftX = currX;
             lastLeftY = currY;
+
+            printf("segunda rodada ---\n ------------- \n"); 
 
             nextIndex = 0;
             for(int i(0); i < numPixelsString; ++i)
             {
                 // counter-clockwise
-                nextIndex = findEdge(src, currX, currY, vXi, vYi, nextIndex); 
+                blackIndex = findEdge(src, currX, currY, vXi, vYi, nextIndex, selfValue); 
                 printf("blackIndex: %d\n", blackIndex); 
                 currX += vXi[blackIndex];
                 currY += vYi[blackIndex];
                 dst.pix(currX, currY) = 0;
+                nextIndex = (blackIndex + 4) % 8;
             }
             lastRightX = currX;
             lastRightY = currY;
