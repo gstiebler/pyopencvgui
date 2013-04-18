@@ -72,5 +72,6 @@ class OutputWindow:
         self.scrolled_window.connect("motion-notify-event", self.mouse_move, None)
         self.image.connect("motion-notify-event", self.mouse_move, None)
         
+        self.outputWindow.move( 50, 300 )
         self.outputWindow.show()
         

@@ -32,7 +32,6 @@ class FuncWindow:
         self.execute()
 
     def process_line(self, line):  
-        print "line", line  
         pieces = line.split(':')
         name = pieces.pop(0)
         type = pieces.pop(0)
@@ -59,7 +58,6 @@ class FuncWindow:
     def process_text(self, text):
         lines = text.splitlines()
         self.func_str = lines.pop(0)
-        print "func name", self.func_str
         self.window.set_title(self.func_str)
         for line in lines:
             self.process_line(line)
@@ -91,6 +89,7 @@ class FuncWindow:
             arr2 = tmp_image.ctypes.data_as(ctypes.POINTER(ctypes.c_ubyte))
             func_str = '%s(arr1, arr2, c_int(src_image.shape[0]), c_int(src_image.shape[1]), %s)' % (self.func_str, params_str)
             
+        print func_str
         exec func_str
         
         colorImage = cv2.cvtColor(tmp_image, cv2.COLOR_GRAY2BGR)
@@ -112,4 +111,5 @@ class FuncWindow:
         self.process_text(text)
         
         self.window.show()
+        self.window.move( 600, 50 )
 

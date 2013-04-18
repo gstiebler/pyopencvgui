@@ -61,7 +61,7 @@ class MyProgram:
         func_window.FuncWindow(func_text, self.outputWindow)
 
     def add_custom_function(self, func_text, func_name):
-        func_button = gtk.Button("funcao")
+        func_button = gtk.Button( func_name )
         self.vbox1.pack_end( func_button )
         func_button.show()
         func_button.connect("clicked", self.func1_callback, func_text)
@@ -78,7 +78,8 @@ class MyProgram:
         self.addFuncButton.connect("clicked", self.addFuncCallback, None)
         self.vbox1 = self.gladeBuilder.get_widget( "vbox1" )
 
-        func_text = "mylib.myfunc\nnumPixelsString:int: value = 15, lower = 0, upper = 50"
+        #func_text = "mylib.seismicProcess\nnumPixelsString:int: value = 15, lower = 0, upper = 50\nxDebug:int: value = 15, lower = 0, upper = 600"
+        func_text = "mylib.seismicProcess\nnumPixelsString:int: value = 15, lower = 0, upper = 50"
         self.add_custom_function( func_text, "custom_func" )
 
         self.app_window.set_title('Main Window')

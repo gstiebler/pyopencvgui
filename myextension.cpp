@@ -31,7 +31,7 @@ int myfunc(uchar *srcImgData, uchar *dstImgData, int height, int width, int thre
     return 0;  
 }
 
-void initDirections(char vX[16], char vY[16], char vXi[16], char vYi[16])
+void initDirections(char *vX, char *vY, char *vXi, char *vYi)
 {
     vX[0] = 0;
     vX[1] = 1;
@@ -101,20 +101,29 @@ uchar findEdge(Image &src, int xIni, int yIni, char vX[16], char vY[16], uchar s
 
 void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width, int numPixelsString) 
 {
+    int xD = 180, yD = 156;
+    printf("h %d, w %d, n %d, x %d, y %d\n", height, width, numPixelsString, xD, yD);
     Image src(srcImgData, width, height);
     Image dst(dstImgData, width, height);
 
     char vX[16], vY[16], vXi[16], vYi[16];
     initDirections(vX, vY, vXi, vYi);
 
+    printf("Inicializou direcoes\n");
+
     int nextIndex, blackIndex;
-    char currX, currY;
+    int currX, currY;
     int lastLeftX, lastLeftY, lastRightX, lastRightY;
-    int difX, difY;
+    int difXright, difYright, difXleft, difYleft;
     
-    double tan1, tan2;
+    double tan1, tan2, ang1, ang2;
+
+    
+    printf("Dims %d, %d\n", src.getHeight(), src.getWidth());
+
     for(int y(1); y < src.getHeight() - 1; ++y)
     {
+        // printf("y%d ", y);
         for(int x(1); x < src.getWidth() - 1; ++x)
         {      
             
@@ -125,14 +134,19 @@ void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width,
             for(int i(0); i < numPixelsString; ++i)
             {
                 // clockwise
+                blackIndex = findEdge(src, currX, currY, vX, vY, nextIndex, selfValue); 
                 currX += vX[blackIndex];
                 currY += vY[blackIndex];
                 nextIndex = (blackIndex + 4) % 8;
+                if( x == xD && y == yD )
+                    printf("left i: %d, blackIndex: %d, currX: %d, currY:%d, vX: %d, vY: %d\n", i, blackIndex, currX, currY, (int) vX[blackIndex], (int) vY[blackIndex]);
             }
             lastLeftX = currX;
             lastLeftY = currY;
 
             nextIndex = 0;
+            currX = x;
+            currY = y;
             for(int i(0); i < numPixelsString; ++i)
             {
                 // counter-clockwise
@@ -140,28 +154,44 @@ void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width,
                 currX += vXi[blackIndex];
                 currY += vYi[blackIndex];
                 nextIndex = (blackIndex + 4) % 8;
+                if( x == xD && y == yD )
+                    printf("right i: %d, blackIndex: %d, currX: %d, currY:%d \n", i, blackIndex, currX, currY);
             }
             lastRightX = currX;
             lastRightY = currY;
 
             
-            difX = abs(lastRightX - x);
-            difY = abs(lastRightY - y);
+            difXright = lastRightX - x;
+            difYright = lastRightY - y;
             tan1 = 0.0;
-            if(difY != 0)
-                tan1 = difX * 1.0 / difY;
+            if(difYright != 0)
+                tan1 = difXright * 1.0 / difYright;
+            ang1 = atan( tan1 );
             
-            difX = lastLeftX - x;
-            difY = lastLeftY - y;
+            difXleft = x - lastLeftX;
+            difYleft = lastLeftY - y;
             tan2 = 0.0;
-            if(difY != 0)
-                tan2 = difX * 1.0 / difY;
+            if(difYleft != 0)
+                tan2 = difXleft * 1.0 / difYleft;
+            ang2 = atan( tan2 );
 
-            double difTans = fabs(tan1 - tan2);
-            dst.pix(x, y) = (int) difTans;
+            double difAng = ang1 - ang2;
+            difAng *= 90.0;
+            dst.pix(x, y) = (int) difAng;
+            //dst.pix(x, y) = x + y;
+
+            if( x == xD && y == yD )
+            {
+                printf(" --------------- \n");
+                printf("difXright: %d, difYright: %d\n", difXright, difYright);
+                printf("difXleft: %d, difYleft: %d\n", difXleft, difYleft);
+                printf("tan1: %f, tan2: %f, ang1: %f, ang2: %f, difAng: %f\n", tan1, tan2, ang1, ang2, difAng);
+                printf("\n");
+            }
 	    }
     }
   
 }
 
 } // end extern "C"
+
