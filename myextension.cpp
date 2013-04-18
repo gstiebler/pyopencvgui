@@ -99,6 +99,27 @@ uchar findEdge(Image &src, int xIni, int yIni, char vX[16], char vY[16], uchar s
 
 
 
+double quadrantCorrection( double ang, int x, int y)
+{
+    if(x == 0)
+    {
+        if(y > 0)
+            return -90.0;
+        else
+            return -90.0;
+    }
+    else if (x > 0)
+        return ang;
+    else
+    {
+        ang += 180.0;
+        if(ang > 360.0)
+            ang -= 360.0;
+        return ang;
+    }
+}
+
+
 void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width, int numPixelsString) 
 {
     int xD = 180, yD = 156;
@@ -117,7 +138,7 @@ void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width,
     int difXright, difYright, difXleft, difYleft;
     
     double tan1, tan2, ang1, ang2;
-
+    double conv = 180.0 / 3.1416;
     
     printf("Dims %d, %d\n", src.getHeight(), src.getWidth());
 
@@ -139,7 +160,7 @@ void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width,
                 currY += vY[blackIndex];
                 nextIndex = (blackIndex + 4) % 8;
                 if( x == xD && y == yD )
-                    printf("left i: %d, blackIndex: %d, currX: %d, currY:%d, vX: %d, vY: %d\n", i, blackIndex, currX, currY, (int) vX[blackIndex], (int) vY[blackIndex]);
+                    printf("left i: %d, blackIndex: %d, currX: %d, currY:%d\n", i, blackIndex, currX, currY);
             }
             lastLeftX = currX;
             lastLeftY = currY;
@@ -164,19 +185,23 @@ void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width,
             difXright = lastRightX - x;
             difYright = lastRightY - y;
             tan1 = 0.0;
-            if(difYright != 0)
-                tan1 = difXright * 1.0 / difYright;
-            ang1 = atan( tan1 );
+            if(difXright != 0)
+                tan1 = - difYright * 1.0 / difXright;
+            ang1 = atan( tan1 ) * conv;
+            ang1 = quadrantCorrection( ang1, difXright, difYright );
             
-            difXleft = x - lastLeftX;
+            difXleft = lastLeftX - x;
             difYleft = lastLeftY - y;
             tan2 = 0.0;
-            if(difYleft != 0)
-                tan2 = difXleft * 1.0 / difYleft;
-            ang2 = atan( tan2 );
+            if(difXleft != 0)
+                tan2 = - difYleft * 1.0 / difXleft;
+            ang2 = atan( tan2 ) * conv;
+            ang2 = quadrantCorrection( ang2, difXleft, difYleft );
 
             double difAng = ang1 - ang2;
-            difAng *= 90.0;
+            if(difAng < 0.0)
+                difAng = 0.0;
+
             dst.pix(x, y) = (int) difAng;
             //dst.pix(x, y) = x + y;
 
