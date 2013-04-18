@@ -56,6 +56,15 @@ class MyProgram:
         text = buffer.get_text(begin, end)
     
         func_window.FuncWindow(text, self.outputWindow)
+
+    def func1_callback(self, widget, func_text):
+        func_window.FuncWindow(func_text, self.outputWindow)
+
+    def add_custom_function(self, func_text, func_name):
+        func_button = gtk.Button("funcao")
+        self.vbox1.pack_end( func_button )
+        func_button.show()
+        func_button.connect("clicked", self.func1_callback, func_text)
         
     def __init__(self):  
         self.gladeBuilder = gtk.glade.XML( "MainWindow.glade", "mainWindow") 
@@ -67,12 +76,16 @@ class MyProgram:
         self.app_window.connect("delete_event", lambda w,e: gtk.main_quit())
         self.openFileButton.connect("clicked", self.openFileCallback, None)
         self.addFuncButton.connect("clicked", self.addFuncCallback, None)
+        self.vbox1 = self.gladeBuilder.get_widget( "vbox1" )
+
+        func_text = "mylib.myfunc\nnumPixelsString:int: value = 15, lower = 0, upper = 50"
+        self.add_custom_function( func_text, "custom_func" )
 
         self.app_window.set_title('Main Window')
         self.app_window.show()
         self.outputWindow = output_window.OutputWindow()
 
-        self.load_image("cinza.jpg")
+        self.load_image("dj.bmp")
         
         return
 

@@ -31,7 +31,8 @@ class FuncWindow:
     def combobox_callback(self, combobox, user_data):
         self.execute()
 
-    def process_line(self, line):    
+    def process_line(self, line):  
+        print "line", line  
         pieces = line.split(':')
         name = pieces.pop(0)
         type = pieces.pop(0)
@@ -58,6 +59,7 @@ class FuncWindow:
     def process_text(self, text):
         lines = text.splitlines()
         self.func_str = lines.pop(0)
+        print "func name", self.func_str
         self.window.set_title(self.func_str)
         for line in lines:
             self.process_line(line)
@@ -105,9 +107,9 @@ class FuncWindow:
         self.window = self.gladeBuilder.get_widget("mainWindow")
         self.main_vbox = self.gladeBuilder.get_widget("mainVBox")
         self.execute_button = self.gladeBuilder.get_widget("executeButton")
-        
         self.execute_button.connect("clicked", self.execute_button_callback, None)
         
         self.process_text(text)
         
         self.window.show()
+
