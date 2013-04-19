@@ -86,7 +86,7 @@ class MyProgram:
         self.app_window.show()
         self.outputWindow = output_window.OutputWindow()
 
-        self.load_image("dj.bmp")
+        self.load_image("../bin/dj.bmp")
         
         return
 

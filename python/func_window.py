@@ -9,7 +9,7 @@ import ctypes
 
 from ctypes import *
 # mylib = cdll.LoadLibrary("./libmyextension.so") 
-mylib = windll.imageProcessing
+mylib = ctypes.WinDLL('../bin/imageProcessing.dll')
 
 class FuncWindow:
 
