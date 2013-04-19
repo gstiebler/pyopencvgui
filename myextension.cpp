@@ -11,12 +11,13 @@ extern "C" {
 typedef unsigned char uchar;
 typedef long int lint;
   
-int myfunc(uchar *srcImgData, uchar *dstImgData, int height, int width, int thresh)
+__declspec(dllexport) void __stdcall myfunc(uchar *srcImgData, uchar *dstImgData, int height, int width, int thresh)
 {
+    printf("Largura %d, Altura %d\n", width, height);
     Image src(srcImgData, width, height);
     Image dst(dstImgData, width, height);
 
-    uchar uThresh = (uchar) thresh;
+    uchar uThresh = (uchar) thresh; 
     for(int i(0); i < src.getWidth(); ++i)
     {
         for(int j(0); j < src.getHeight(); ++j)
@@ -27,8 +28,6 @@ int myfunc(uchar *srcImgData, uchar *dstImgData, int height, int width, int thre
                 dst.pix(i, j) = 255;
         }
     }
-  
-    return 0;  
 }
 
 void initDirections(char *vX, char *vY, char *vXi, char *vYi)
@@ -95,6 +94,8 @@ uchar findEdge(Image &src, int xIni, int yIni, char vX[16], char vY[16], uchar s
         if(currValue <= selfValue)
             return i % 8;
     }
+
+    return -1;
 }
 
 
@@ -117,10 +118,10 @@ double quadrantCorrection( double ang, int x, int y)
             ang -= 360.0;
         return ang;
     }
-}
+} 
+ 
 
-
-void seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width, int numPixelsString) 
+__declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width, int numPixelsString) 
 {
     int xD = 180, yD = 156;
     printf("h %d, w %d, n %d, x %d, y %d\n", height, width, numPixelsString, xD, yD);

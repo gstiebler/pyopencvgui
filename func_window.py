@@ -8,7 +8,8 @@ import numpy
 import ctypes
 
 from ctypes import *
-mylib = cdll.LoadLibrary("./libmyextension.so") 
+# mylib = cdll.LoadLibrary("./libmyextension.so") 
+mylib = windll.imageProcessing
 
 class FuncWindow:
 
@@ -81,7 +82,7 @@ class FuncWindow:
         elif func_module == "mylib":
             for widget in self.widget_params:
                 if type(widget) is gtk.HScale:
-                    params_str += 'c_int(%d), ' % widget.get_value()
+                    params_str += '%d, ' % widget.get_value()
             params_str = params_str[:-2]
             
             tmp_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY)
