@@ -103,7 +103,7 @@ class FuncWindow:
         self.widget_params = []
         self.output_window = output_window
     
-        self.gladeBuilder = gtk.glade.XML( "FuncWindow.glade", "mainWindow") 
+        self.gladeBuilder = gtk.glade.XML( "../glade/FuncWindow.glade", "mainWindow") 
         self.window = self.gladeBuilder.get_widget("mainWindow")
         self.main_vbox = self.gladeBuilder.get_widget("mainVBox")
         self.execute_button = self.gladeBuilder.get_widget("executeButton")

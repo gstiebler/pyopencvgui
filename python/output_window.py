@@ -52,7 +52,7 @@ class OutputWindow:
     def __init__(self):
         self.zoomFactor = 1
     
-        self.gladeBuilder = gtk.glade.XML( "OutputWindow.glade", "mainWindow") 
+        self.gladeBuilder = gtk.glade.XML( "../glade/OutputWindow.glade", "mainWindow") 
         self.outputWindow = self.gladeBuilder.get_widget("mainWindow")
         self.scrolled_window = self.gladeBuilder.get_widget("scrWindow")
         self.zoomScale = self.gladeBuilder.get_widget("zoomScale")

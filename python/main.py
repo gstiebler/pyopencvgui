@@ -67,7 +67,7 @@ class MyProgram:
         func_button.connect("clicked", self.func1_callback, func_text)
         
     def __init__(self):  
-        self.gladeBuilder = gtk.glade.XML( "MainWindow.glade", "mainWindow") 
+        self.gladeBuilder = gtk.glade.XML( "../glade/MainWindow.glade", "mainWindow") 
         self.app_window = self.gladeBuilder.get_widget("mainWindow")
         self.openFileButton = self.gladeBuilder.get_widget("openFileButton")
         self.addFuncButton = self.gladeBuilder.get_widget("addFuncButton")
