@@ -151,6 +151,8 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
     {
         for(int x(1); x < src.getWidth() - 1; ++x)
         {    
+            if( x == xD && y == yD )
+                printf("Debug (%d, %d) \n", x, y);
             uchar selfValue = src.pix(x, y);
             nextIndex = 0;
             currX = x;
@@ -185,7 +187,7 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
                 if( x == xD && y == yD )
                     printf("left i: %d, blackIndex: %d, currX: %d, currY:%d\n", i, blackIndex, currX, currY);
 
-                sumTurns = lastBlackIndex - blackIndex;
+                sumTurns += lastBlackIndex - blackIndex;
                 if( currX == (x + vX[0]) && currY == (y + vY[0]) )
                 {
                     if( sumTurns > 0 )
@@ -198,11 +200,14 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 
                 lastBlackIndex = blackIndex;
             }
+            lastLeftX = currX;
+            lastLeftY = currY;
+            if( x == xD && y == yD )
+                printf("Sum turn %d, lasts (%d, %d)\n", sumTurns, lastLeftX, lastLeftY);
+
             if( shouldContinue )
                 continue;
 
-            lastLeftX = currX;
-            lastLeftY = currY;
 
             nextIndex = 0;
             currX = x;
@@ -221,7 +226,8 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
                 currX += vXi[blackIndex];
                 currY += vYi[blackIndex];
                 nextIndex = (blackIndex + 4) % 8;
-
+                
+                sumTurns += lastBlackIndex - blackIndex;
                 if( currX == lastLeftX && currY == lastLeftY )
                 {
                     if( sumTurns < 0 )
@@ -231,7 +237,7 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 
                     closed = true;
                     if( x == xD && y == yD )
-                        printf("Right met lastLeft (%d, %d) \n", lastLeftX, lastLeftY);
+                        printf("Right met lastLeft (%d, %d) %d\n", lastLeftX, lastLeftY, sumTurns);
                     break;
                 }
                 lastBlackIndex = blackIndex;
