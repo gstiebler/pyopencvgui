@@ -78,9 +78,9 @@ class MyProgram:
         self.addFuncButton.connect("clicked", self.addFuncCallback, None)
         self.vbox1 = self.gladeBuilder.get_widget( "vbox1" )
 
-        #func_text = "mylib.seismicProcess\nnumPixelsString:int: value = 15, lower = 0, upper = 50\nxDebug:int: value = 15, lower = 0, upper = 600"
+        #func_text = "mylib.seismicProcess\nnumPixelsString:int: value = 15, lower = 0, upper = 50\nxDebug:int: value = 15, lower = 0, upper = 300\nyDebug:int: value = 15, lower = 0, upper = 300"
         func_text = "mylib.seismicProcess\nnumPixelsString:int: value = 15, lower = 0, upper = 50"
-        self.add_custom_function( func_text, "custom_func" )
+        self.add_custom_function( func_text, "seismicProcess" )
 
         self.app_window.set_title('Main Window')
         self.app_window.show()
