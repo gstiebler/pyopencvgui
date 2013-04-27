@@ -81,6 +81,8 @@ class MyProgram:
         #func_text = "mylib.seismicProcess\nnumPixelsString:int: value = 15, lower = 0, upper = 50\nxDebug:int: value = 15, lower = 0, upper = 300\nyDebug:int: value = 15, lower = 0, upper = 300"
         func_text = "mylib.seismicProcess\nnumPixelsString:int: value = 15, lower = 0, upper = 50"
         self.add_custom_function( func_text, "seismicProcess" )
+        
+        self.add_custom_function( "mylib.vhEdges\nThreshold:int: value = 30, lower = 0, upper = 255\nDelta:int: value = 2, lower = 1, upper = 15", "vhEdges" )
 
         self.app_window.set_title('Main Window')
         self.app_window.show()

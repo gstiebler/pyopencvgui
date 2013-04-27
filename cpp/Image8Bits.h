@@ -1,6 +1,5 @@
- 
-#ifndef IMAGE_CPP
-#define IMAGE_CPP
+#ifndef IMAGE_8BITS_H
+#define IMAGE_8BITS_H
 
 typedef unsigned char uchar;
 

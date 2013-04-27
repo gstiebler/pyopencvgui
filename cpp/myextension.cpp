@@ -5,11 +5,9 @@
 #include <math.h>
 
 #include "Image8Bits.h"
+#include "base.h"
 
 extern "C" {
- 
-typedef unsigned char uchar;
-typedef long int lint;
   
 __declspec(dllexport) void __stdcall myfunc(uchar *srcImgData, uchar *dstImgData, int height, int width, int thresh)
 {
