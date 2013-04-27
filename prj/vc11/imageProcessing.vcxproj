@@ -81,10 +81,10 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\cpp\Image.h" />
+    <ClInclude Include="..\..\cpp\Image8Bits.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\cpp\Image.cpp" />
+    <ClCompile Include="..\..\cpp\Image8Bits.cpp" />
     <ClCompile Include="..\..\cpp\myextension.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

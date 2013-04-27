@@ -4,10 +4,10 @@
 
 typedef unsigned char uchar;
 
-class Image
+class Image8Bits
 {
 public:
-    Image(uchar *data, int width, int height);
+    Image8Bits(uchar *data, int width, int height);
     uchar& pix(int i, int j);
     int getWidth();
     int getHeight();

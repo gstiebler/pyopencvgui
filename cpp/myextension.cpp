@@ -4,7 +4,7 @@
 #include <memory.h>
 #include <math.h>
 
-#include "Image.h"
+#include "Image8Bits.h"
 
 extern "C" {
  
@@ -14,8 +14,8 @@ typedef long int lint;
 __declspec(dllexport) void __stdcall myfunc(uchar *srcImgData, uchar *dstImgData, int height, int width, int thresh)
 {
     printf("Largura %d, Altura %d\n", width, height);
-    Image src(srcImgData, width, height);
-    Image dst(dstImgData, width, height);
+    Image8Bits src(srcImgData, width, height);
+    Image8Bits dst(dstImgData, width, height);
 
     uchar uThresh = (uchar) thresh; 
     for(int i(0); i < src.getWidth(); ++i)
@@ -62,7 +62,7 @@ void initDirections(char *vX, char *vY, char *vXi, char *vYi)
 
 enum FE_RESPONSE { E_NO_WHITE = -1, E_ALL_WHITE = -2 };
 
-int findEdge(Image &src, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex, uchar selfValue)
+int findEdge(Image8Bits &src, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex, uchar selfValue)
 {
     // finds white pixel
     int whiteIndex = -1;
@@ -129,8 +129,8 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 {
     int xD = 113, yD = 55;
     printf("h %d, w %d, n %d, x %d, y %d\n", height, width, numPixelsString, xD, yD);
-    Image src(srcImgData, width, height);
-    Image dst(dstImgData, width, height);
+    Image8Bits src(srcImgData, width, height);
+    Image8Bits dst(dstImgData, width, height);
 
     char vX[16], vY[16], vXi[16], vYi[16];
     initDirections(vX, vY, vXi, vYi);
