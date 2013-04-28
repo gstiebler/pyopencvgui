@@ -78,6 +78,8 @@ class MyProgram:
         self.openFileButton.connect("clicked", self.openFileCallback, None)
         self.addFuncButton.connect("clicked", self.addFuncCallback, None)
         self.vbox1 = self.gladeBuilder.get_widget( "vbox1" )
+        
+        self.app_window.resize(200, 300);
            
         dom1 = parse('functions.xml')
         functions = dom1.getElementsByTagName("function")
