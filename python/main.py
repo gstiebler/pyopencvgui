@@ -7,6 +7,7 @@ import gtk
 import gtk.glade
 import cv2
 import numpy
+from xml.dom.minidom import parse, parseString
 
 import output_window
 import func_window
@@ -57,14 +58,14 @@ class MyProgram:
     
         func_window.FuncWindow(text, self.outputWindow)
 
-    def func1_callback(self, widget, func_text):
-        func_window.FuncWindow(func_text, self.outputWindow)
+    def func1_callback(self, widget, function_xml):
+        func_window.FuncWindow(function_xml, self.outputWindow)
 
-    def add_custom_function(self, func_text, func_name):
-        func_button = gtk.Button( func_name )
+    def add_custom_function(self, function_xml):
+        func_button = gtk.Button( function_xml.getAttribute("name") )
         self.vbox1.pack_end( func_button )
         func_button.show()
-        func_button.connect("clicked", self.func1_callback, func_text)
+        func_button.connect("clicked", self.func1_callback, function_xml)
         
     def __init__(self):  
         self.gladeBuilder = gtk.glade.XML( "../glade/MainWindow.glade", "mainWindow") 
@@ -77,13 +78,12 @@ class MyProgram:
         self.openFileButton.connect("clicked", self.openFileCallback, None)
         self.addFuncButton.connect("clicked", self.addFuncCallback, None)
         self.vbox1 = self.gladeBuilder.get_widget( "vbox1" )
-
-        #func_text = "mylib.seismicProcess\nnumPixelsString:int: value = 15, lower = 0, upper = 50\nxDebug:int: value = 15, lower = 0, upper = 300\nyDebug:int: value = 15, lower = 0, upper = 300"
-        func_text = "mylib.seismicProcess\nnumPixelsString:int: value = 15, lower = 0, upper = 50"
-        self.add_custom_function( func_text, "seismicProcess" )
-        
-        self.add_custom_function( "mylib.vhEdges\nThreshold:int: value = 30, lower = 0, upper = 255\nDelta:int: value = 2, lower = 1, upper = 15", "vhEdges" )
-
+           
+        dom1 = parse('functions.xml')
+        functions = dom1.getElementsByTagName("function")
+        for function in functions:
+            self.add_custom_function( function )    
+            
         self.app_window.set_title('Main Window')
         self.app_window.show()
         self.outputWindow = output_window.OutputWindow()

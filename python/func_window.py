@@ -6,10 +6,15 @@ import gtk.glade
 import cv2
 import numpy
 import ctypes
+import copy
 
 from ctypes import *
 # mylib = cdll.LoadLibrary("./libmyextension.so") 
 mylib = ctypes.WinDLL('../bin/imageProcessing.dll')
+
+
+def get_xml_text( node ):
+    return node[0].firstChild.data
 
 class FuncWindow:
 
@@ -31,13 +36,18 @@ class FuncWindow:
         
     def combobox_callback(self, combobox, user_data):
         self.execute()
+        
+    def get_xml_text( node ):
+        return node[0].firstChild.data
 
-    def process_line(self, line):  
-        pieces = line.split(':')
-        name = pieces.pop(0)
-        type = pieces.pop(0)
+    def process_param(self, param):  
+        name = param.getAttribute("name")
+        type = param.getAttribute("type")
         if type == 'int':
-            str_exec = "adj = gtk.Adjustment(%s)" % pieces[0]
+            adj_params = "value = %s, " % get_xml_text(param.getElementsByTagName("value"))
+            adj_params += "lower = %s, " % get_xml_text(param.getElementsByTagName("lower"))
+            adj_params += "upper = %s" % get_xml_text(param.getElementsByTagName("upper"))
+            str_exec = "adj = gtk.Adjustment(%s)" % adj_params
             exec str_exec
             hscale = gtk.HScale(adj)
             adj.set_step_increment(1)
@@ -56,45 +66,51 @@ class FuncWindow:
                 
             self.add_param(combo, name)
 
-    def process_text(self, text):
-        lines = text.splitlines()
-        self.func_str = lines.pop(0)
+    def process_text(self, function_xml):
+        self.func_str = function_xml.getAttribute("name")
+        self.func_module = get_xml_text(function_xml.getElementsByTagName("srcLib"))
+        self.srcDataType = get_xml_text(function_xml.getElementsByTagName("sourceDataType"))
+        self.destDataType = get_xml_text(function_xml.getElementsByTagName("destDataType"))
         self.window.set_title(self.func_str)
-        for line in lines:
-            self.process_line(line)
+        
+        params = function_xml.getElementsByTagName("params")[0].getElementsByTagName("param")
+        for param in params:
+            self.process_param(param)
             
     def execute(self):
         params_str = ''
         
-        src_image = self.output_window.get_src_image()
-        gray_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY)
+        for widget in self.widget_params:
+            if type(widget) is gtk.HScale:
+                params_str += '%d, ' % widget.get_value()
+            elif type(widget) is gtk.ComboBox:
+                params_str += '%s.%s, ' % (func_module, widget.get_active_text())
+        params_str = params_str[:-2]
         
-        func_module = self.func_str.split('.')[0]
-        if func_module == "cv2":
-            for widget in self.widget_params:
-                if type(widget) is gtk.HScale:
-                    params_str += '%d, ' % widget.get_value()
-                elif type(widget) is gtk.ComboBox:
-                    params_str += 'cv2.%s, ' % widget.get_active_text()
-            params_str = params_str[:-2]
-            
-            func_str = 'result = %s(gray_image, %s)' % (self.func_str, params_str)
-        elif func_module == "mylib":
-            for widget in self.widget_params:
-                if type(widget) is gtk.HScale:
-                    params_str += '%d, ' % widget.get_value()
-            params_str = params_str[:-2]
-            
-            tmp_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY)
-            arr1 = gray_image.ctypes.data_as(ctypes.POINTER(ctypes.c_ubyte))
-            arr2 = tmp_image.ctypes.data_as(ctypes.POINTER(ctypes.c_ubyte))
-            func_str = '%s(arr1, arr2, c_int(src_image.shape[0]), c_int(src_image.shape[1]), %s)' % (self.func_str, params_str)
+        src_image = self.output_window.get_src_image()
+        
+        if self.destDataType == "8bits":
+            dest_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY)
+        else:
+            dest_image = copy.deepcopy(src_image)
+        
+        if self.srcDataType == "8bits":
+            src_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY)
+        
+        func_str = ""
+        if self.func_module == "cv2":
+            func_str = 'result = %s(src_image, %s)' % (self.func_str, params_str)
+        elif self.func_module == "mylib":
+            arr1 = src_image.ctypes.data_as(ctypes.POINTER(ctypes.c_ubyte))
+            arr2 = dest_image.ctypes.data_as(ctypes.POINTER(ctypes.c_ubyte))
+            func_str = '%s.%s(arr1, arr2, c_int(src_image.shape[0]), c_int(src_image.shape[1]), %s)' % (self.func_module, self.func_str, params_str)
             
         print func_str
         exec func_str
         
-        colorImage = cv2.cvtColor(tmp_image, cv2.COLOR_GRAY2BGR)
-        self.output_window.setCurrentImage(colorImage)
+        if self.destDataType == "8bits":
+            dest_image = cv2.cvtColor(dest_image, cv2.COLOR_GRAY2BGR)
+        self.output_window.setCurrentImage(dest_image)
        
     def execute_button_callback(self, widget, data=None):
         self.execute()

@@ -3,10 +3,10 @@
 #include "ImageRGB.h"
 #include "Image8Bits.h"
 
-__declspec(dllexport) void __stdcall vhEdges(uchar *srcImgData, uchar *dstImgData, int height, int width, int thresh, int delta)
+__declspec(dllexport) void __stdcall hEdges(uchar *srcImgData, uchar *dstImgData, int height, int width, int thresh, int delta)
 {
 	Image8Bits src(srcImgData, width, height);
-	ImageRGB dst(srcImgData, width, height);
+	ImageRGB dst(dstImgData, width, height);
 
 	int dif;
 	for( int j(0); j < src.getHeight(); ++j)

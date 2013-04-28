@@ -5,7 +5,7 @@
 
 extern "C" {
 	
-__declspec(dllexport) void __stdcall vhEdges(uchar *srcImgData, uchar *dstImgData, int height, int width, int thresh, int delta);
+__declspec(dllexport) void __stdcall hEdges(uchar *srcImgData, uchar *dstImgData, int height, int width, int thresh, int delta);
 
 }
 
