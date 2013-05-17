@@ -7,12 +7,19 @@ import cv2
 import numpy
 
 def getRGB(image, x, y):
-    width = image.shape[0]
+    width = image.shape[1]
     baseIndex = int(y * width * 3 + x * 3)
     r = ord(image.data[baseIndex + 0])
     g = ord(image.data[baseIndex + 1])
     b = ord(image.data[baseIndex + 2])
     return (r, g, b)
+    
+def setRGB(image, x, y, r, g, b):
+    width = image.shape[1]
+    baseIndex = int(y * width * 3 + x * 3)
+    image.data[baseIndex + 0] = chr(r)
+    image.data[baseIndex + 1] = chr(g)
+    image.data[baseIndex + 2] = chr(b)
 
 class OutputWindow:
 
@@ -34,6 +41,12 @@ class OutputWindow:
         
         str = '(%d, %d) -\t (%d, %d, %d)' % (x, y, r, g, b)
         self.infoLabel.set_label(str)
+        
+    def spin_changed(self, widget, data):
+        x = self.xSpin.get_value()
+        y = self.ySpin.get_value()
+        setRGB(self.currentImage, x, y, 0, 255, 0)
+        self.show_image(self.currentImage)
         
     def setCurrentImage(self, image):
         self.currentImage = image
@@ -57,6 +70,8 @@ class OutputWindow:
         self.scrolled_window = self.gladeBuilder.get_widget("scrWindow")
         self.zoomScale = self.gladeBuilder.get_widget("zoomScale")
         self.infoLabel = self.gladeBuilder.get_widget("infoLabel")
+        self.xSpin = self.gladeBuilder.get_widget("xSpin")
+        self.ySpin = self.gladeBuilder.get_widget("ySpin")
         
         self.image = gtk.Image()
         self.eventBox = gtk.EventBox()
@@ -71,6 +86,8 @@ class OutputWindow:
         self.zoomScale.connect("value-changed", self.zoomChanged, None)
         self.scrolled_window.connect("motion-notify-event", self.mouse_move, None)
         self.image.connect("motion-notify-event", self.mouse_move, None)
+        self.xSpin.connect("value_changed", self.spin_changed, None )
+        self.ySpin.connect("value_changed", self.spin_changed, None )
         
         self.outputWindow.move( 50, 300 )
         self.outputWindow.show()
