@@ -65,10 +65,13 @@ int findEdge(Image8Bits &src, int xIni, int yIni, char vX[16], char vY[16], ucha
     // finds white pixel
     int whiteIndex = -1;
     int xIndex, yIndex;
+	int deltaX, deltaY;
     for(int i(startIndex); i < ( startIndex + 8 ); ++i)
     {
-        xIndex = xIni + vX[i];
-        yIndex = yIni + vY[i];
+		deltaX = vX[i];
+		deltaY = vY[i];
+        xIndex = xIni + deltaX;
+        yIndex = yIni + deltaY;
         if( xIndex == 0 || yIndex == 0 || xIndex == src.getWidth() || yIndex == src.getHeight() )
             break;
 
@@ -87,8 +90,10 @@ int findEdge(Image8Bits &src, int xIni, int yIni, char vX[16], char vY[16], ucha
     startIndex = (whiteIndex + 1) % 8;
     for(int i(startIndex); i < ( startIndex + 8 ); ++i)
     {
-        xIndex = xIni + vX[i];
-        yIndex = yIni + vY[i];
+		deltaX = vX[i];
+		deltaY = vY[i];
+        xIndex = xIni + deltaX;
+        yIndex = yIni + deltaY;
         if( xIndex == 0 || yIndex == 0 || xIndex == src.getWidth() || yIndex == src.getHeight() )
             break;
 
@@ -125,7 +130,7 @@ double quadrantCorrection( double ang, int x, int y)
 
 __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width, int numPixelsString) 
 {
-    int xD = 113, yD = 55;
+    int xD = 167, yD = 48;
     printf("h %d, w %d, n %d, x %d, y %d\n", height, width, numPixelsString, xD, yD);
     Image8Bits src(srcImgData, width, height);
     Image8Bits dst(dstImgData, width, height);
@@ -156,7 +161,7 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
             currX = x;
             currY = y;
 
-            int lastBlackIndex;
+            int firstBlackIndex, lastBlackIndex; 
             // first pixel
             {
                 blackIndex = findEdge(src, currX, currY, vX, vY, nextIndex, selfValue);
@@ -170,9 +175,11 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
                     dst.pix(x, y) = 0;
                     continue;
                 }
-                lastBlackIndex = blackIndex;
+                firstBlackIndex = blackIndex;
             }
+			lastBlackIndex = firstBlackIndex;
 
+			nextIndex = firstBlackIndex;
             bool shouldContinue = false;
             int sumTurns = 0;
             for(int i(0); i < numPixelsString; ++i)
@@ -183,10 +190,11 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
                 currY += vY[blackIndex];
                 nextIndex = (blackIndex + 4) % 8;
                 if( x == xD && y == yD )
-                    printf("left i: %d, blackIndex: %d, currX: %d, currY:%d\n", i, blackIndex, currX, currY);
+                    printf("left i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d\n", i, blackIndex, currX, currY, vX[blackIndex], vY[blackIndex]);
 
                 sumTurns += lastBlackIndex - blackIndex;
-                if( currX == (x + vX[0]) && currY == (y + vY[0]) )
+				// verifies if the pixel turned back to the first pixel
+                if( currX == (x + vX[0]) && currY == (y + vY[0]) && i > 0 )
                 {
                     if( sumTurns > 0 )
                         dst.pix(x, y) = 0;
@@ -207,7 +215,11 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
                 continue;
 
 
-            nextIndex = 0;
+            nextIndex = firstBlackIndex;
+			// inverting
+			nextIndex = 8 - firstBlackIndex;
+			nextIndex += 8;
+			nextIndex %= 8;
             currX = x;
             currY = y;
             bool closed = false;
@@ -226,6 +238,7 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
                 nextIndex = (blackIndex + 4) % 8;
                 
                 sumTurns += lastBlackIndex - blackIndex;
+				// verifies if the pixel turned back to the first pixel
                 if( currX == lastLeftX && currY == lastLeftY )
                 {
                     if( sumTurns < 0 )
@@ -241,7 +254,7 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
                 lastBlackIndex = blackIndex;
 
                 if( x == xD && y == yD )
-                    printf("right i: %d, blackIndex: %d, currX: %d, currY:%d \n", i, blackIndex, currX, currY);
+                    printf("right i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d\n", i, blackIndex, currX, currY, vXi[blackIndex], vYi[blackIndex]);
             }
             if( closed )
                 continue;
@@ -267,14 +280,12 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
             ang2 = quadrantCorrection( ang2, difXleft, difYleft );
 
             double difAng = ang1 - ang2;
-            if(difAng < 0.0)
-                difAng = 360.0 - difAng;
+			if(difAng < 0.0)
+				difAng += 360.0;
 
-            int val;
-            if(difAng > 180.0)
-                val = 0;
-            else
-                val = (int) (255.0 / 180.0) * (180.0 - difAng);
+			double dist180 = fabs( 180.0 - difAng );
+
+            double val = (255.0 / 180.0) * dist180;
 
             dst.pix(x, y) = (uchar) val;
 
@@ -283,7 +294,7 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
                 printf(" --------------- \n");
                 printf("difXright: %d, difYright: %d\n", difXright, difYright);
                 printf("difXleft: %d, difYleft: %d\n", difXleft, difYleft);
-                printf("tan1: %f, tan2: %f, ang1: %f, ang2: %f, difAng: %f\n", tan1, tan2, ang1, ang2, difAng);
+                printf("tan1: %f, tan2: %f, ang1: %f, ang2: %f, difAng: %f, dist180: %f, val: %f\n", tan1, tan2, ang1, ang2, difAng, dist180, val);
                 printf("\n");
             }
 	    }
