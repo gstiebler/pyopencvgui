@@ -11,6 +11,7 @@ from xml.dom.minidom import parse, parseString
 
 import output_window
 import func_window
+import capture_window
 
 class MyProgram:
 
@@ -67,15 +68,20 @@ class MyProgram:
         func_button.show()
         func_button.connect("clicked", self.func1_callback, function_xml)
         
+    def captureCallback(self, widget, data=None):
+        capture_window.CaptureWindow(self.outputWindow)
+        
     def __init__(self):  
         self.gladeBuilder = gtk.glade.XML( "../glade/MainWindow.glade", "mainWindow") 
         self.app_window = self.gladeBuilder.get_widget("mainWindow")
         self.openFileButton = self.gladeBuilder.get_widget("openFileButton")
+        self.captureButton = self.gladeBuilder.get_widget("captureButton")
         self.addFuncButton = self.gladeBuilder.get_widget("addFuncButton")
         self.newFuncTextView = self.gladeBuilder.get_widget("newFuncTextView")
 
         self.app_window.connect("delete_event", lambda w,e: gtk.main_quit())
         self.openFileButton.connect("clicked", self.openFileCallback, None)
+        self.captureButton.connect("clicked", self.captureCallback, None)
         self.addFuncButton.connect("clicked", self.addFuncCallback, None)
         self.vbox1 = self.gladeBuilder.get_widget( "vbox1" )
         
