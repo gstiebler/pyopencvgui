@@ -18,7 +18,9 @@ class CaptureWindow:
             self.window.destroy()
             return False
         elif self.last_key == 115:
-            self.output_window.setCurrentImage(frame)
+            gray_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            gray_image = cv2.cvtColor(gray_image, cv2.COLOR_GRAY2BGR)
+            self.output_window.set_src_image(gray_image)
             
         self.last_key = 0
         

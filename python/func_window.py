@@ -77,7 +77,7 @@ class FuncWindow:
         for param in params:
             self.process_param(param)
             
-    def execute(self):
+    def execute(self, src_image):
         params_str = ''
         
         for widget in self.widget_params:
@@ -86,8 +86,6 @@ class FuncWindow:
             elif type(widget) is gtk.ComboBox:
                 params_str += '%s.%s, ' % (func_module, widget.get_active_text())
         params_str = params_str[:-2]
-        
-        src_image = self.output_window.get_src_image()
         
         if self.destDataType == "8bits":
             dest_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY)
@@ -110,10 +108,11 @@ class FuncWindow:
         
         if self.destDataType == "8bits":
             dest_image = cv2.cvtColor(dest_image, cv2.COLOR_GRAY2BGR)
-        self.output_window.setCurrentImage(dest_image)
+        return dest_image
        
     def execute_button_callback(self, widget, data=None):
-        self.execute()
+        dest_image = self.execute( self.output_window.get_src_image() )
+        self.output_window.setCurrentImage(dest_image)
 
     def __init__(self, text, output_window):
         self.widget_params = []
