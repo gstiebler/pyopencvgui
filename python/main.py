@@ -18,7 +18,7 @@ class MyProgram:
 
     def load_image(self, file_name):
         print file_name, 'selected'
-        srcImage = cv2.imread(file_name, cv2.CV_LOAD_IMAGE_COLOR);
+        srcImage = cv2.imread(file_name, cv2.CV_LOAD_IMAGE_COLOR)
         self.outputWindow.set_src_image(srcImage)
 
     def openFileCallback(self, widget, data=None):

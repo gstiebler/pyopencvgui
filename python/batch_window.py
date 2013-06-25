@@ -2,6 +2,7 @@
 import pygtk
 pygtk.require('2.0')
 import gtk
+import cv2
 import os
 from xml.dom.minidom import parse, parseString
 
@@ -16,6 +17,12 @@ class BatchWindow:
         self.last_radio = gtk.RadioButton(self.last_radio, function_xml.getAttribute("name"))
         self.vbox.pack_start( self.last_radio, False, False, 5 )
         self.last_radio.connect("clicked", self.func_callback, function_xml)
+        
+    def on_ok_click(self, widget):
+        file_name = "C:\\Projetos\\LensometroSVN2\\imagens\\+1\\image439.bmp"
+        src_image = cv2.imread(file_name, cv2.CV_LOAD_IMAGE_COLOR)
+        dest_img = self.func_window.execute(src_image)
+        print "terminou processamento"
 
     def __init__(self):
     
@@ -26,6 +33,8 @@ class BatchWindow:
         entry = gtk.Entry()
         executeButton = gtk.Button("Execute")
         entry.set_text(os.getcwd())
+        
+        executeButton.connect("clicked", self.on_ok_click)
         
         dom1 = parse('functions.xml')
         functions = dom1.getElementsByTagName("function")
