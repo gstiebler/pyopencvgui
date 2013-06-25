@@ -12,6 +12,7 @@ from xml.dom.minidom import parse, parseString
 import output_window
 import func_window
 import capture_window
+import batch_window
 
 class MyProgram:
 
@@ -71,29 +72,34 @@ class MyProgram:
     def captureCallback(self, widget, data=None):
         capture_window.CaptureWindow(self.outputWindow)
         
-    def __init__(self):  
-        self.gladeBuilder = gtk.glade.XML( "../glade/MainWindow.glade", "mainWindow") 
-        self.app_window = self.gladeBuilder.get_widget("mainWindow")
-        self.openFileButton = self.gladeBuilder.get_widget("openFileButton")
-        self.captureButton = self.gladeBuilder.get_widget("captureButton")
-        self.addFuncButton = self.gladeBuilder.get_widget("addFuncButton")
-        self.newFuncTextView = self.gladeBuilder.get_widget("newFuncTextView")
-
-        self.app_window.connect("delete_event", lambda w,e: gtk.main_quit())
-        self.openFileButton.connect("clicked", self.openFileCallback, None)
-        self.captureButton.connect("clicked", self.captureCallback, None)
-        self.addFuncButton.connect("clicked", self.addFuncCallback, None)
-        self.vbox1 = self.gladeBuilder.get_widget( "vbox1" )
+    def on_batch_click(self, widget, data=None):
+        batch_window.BatchWindow()
         
-        self.app_window.resize(200, 300);
+    def __init__(self):  
+        gladeBuilder = gtk.glade.XML( "../glade/MainWindow.glade", "mainWindow") 
+        app_window = gladeBuilder.get_widget("mainWindow")
+        openFileButton = gladeBuilder.get_widget("openFileButton")
+        captureButton = gladeBuilder.get_widget("captureButton")
+        batchButton = gladeBuilder.get_widget("batchButton")
+        addFuncButton = gladeBuilder.get_widget("addFuncButton")
+        #self.newFuncTextView = gladeBuilder.get_widget("newFuncTextView")
+
+        app_window.connect("delete_event", lambda w,e: gtk.main_quit())
+        openFileButton.connect("clicked", self.openFileCallback, None)
+        captureButton.connect("clicked", self.captureCallback, None)
+        addFuncButton.connect("clicked", self.addFuncCallback, None)
+        batchButton.connect("clicked", self.on_batch_click, None)
+        self.vbox1 = gladeBuilder.get_widget( "vbox1" )
+        
+        app_window.resize(200, 300);
            
         dom1 = parse('functions.xml')
         functions = dom1.getElementsByTagName("function")
         for function in functions:
             self.add_custom_function( function )    
             
-        self.app_window.set_title('Main Window')
-        self.app_window.show()
+        app_window.set_title('Main Window')
+        app_window.show()
         self.outputWindow = output_window.OutputWindow()
 
         self.load_image("../bin/dj.bmp")

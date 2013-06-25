@@ -12,7 +12,6 @@ from ctypes import *
 # mylib = cdll.LoadLibrary("./libmyextension.so") 
 mylib = ctypes.WinDLL('../bin/imageProcessing.dll')
 
-
 def get_xml_text( node ):
     return node[0].firstChild.data
 
