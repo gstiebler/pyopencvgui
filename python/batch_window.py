@@ -19,10 +19,22 @@ class BatchWindow:
         self.last_radio.connect("clicked", self.func_callback, function_xml)
         
     def on_ok_click(self, widget):
-        file_name = "C:\\Projetos\\LensometroSVN2\\imagens\\+1\\image439.bmp"
-        src_image = cv2.imread(file_name, cv2.CV_LOAD_IMAGE_COLOR)
+        base_path = self.entry.get_text()
+        for sub_dir in os.listdir(base_path):
+            complete_path = os.path.join(base_path, sub_dir)
+            if os.path.isdir(complete_path):
+                self.process_dir( complete_path, sub_dir )
+        
+    def process_dir( self, directory, sub_dir ):
+        print directory
+        for file in os.listdir(directory):
+            file_path = os.path.join(directory, file)
+            self.process_file( file_path, sub_dir )
+            
+    def process_file(self, file_path, sub_dir):
+        print file_path, sub_dir
+        src_image = cv2.imread(file_path, cv2.CV_LOAD_IMAGE_COLOR)
         dest_img = self.func_window.execute(src_image)
-        print "terminou processamento"
 
     def __init__(self):
     
@@ -30,9 +42,9 @@ class BatchWindow:
         
         self.window = gtk.Window()
         self.vbox = gtk.VBox( spacing = 5 )
-        entry = gtk.Entry()
+        self.entry = gtk.Entry()
         executeButton = gtk.Button("Execute")
-        entry.set_text(os.getcwd())
+        self.entry.set_text(os.getcwd())
         
         executeButton.connect("clicked", self.on_ok_click)
         
@@ -41,7 +53,7 @@ class BatchWindow:
         for function in functions:
             self.add_custom_function( function ) 
         
-        self.vbox.pack_start(entry, False, False, 5)
+        self.vbox.pack_start(self.entry, False, False, 5)
         self.vbox.pack_start(executeButton, False, False, 5)
         
         self.window.add(self.vbox)
