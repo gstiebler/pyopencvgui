@@ -4,6 +4,7 @@ pygtk.require('2.0')
 import gtk
 import cv2
 import os
+import time
 from xml.dom.minidom import parse, parseString
 
 import func_window
@@ -19,11 +20,16 @@ class BatchWindow:
         self.last_radio.connect("clicked", self.func_callback, function_xml)
         
     def on_ok_click(self, widget):
+        start = time.clock()
         base_path = self.entry.get_text()
         for sub_dir in os.listdir(base_path):
             complete_path = os.path.join(base_path, sub_dir)
             if os.path.isdir(complete_path):
                 self.process_dir( complete_path, sub_dir )
+                  
+        elapsed = (time.clock() - start)
+        print " total time: {0}".format(elapsed)
+
         
     def process_dir( self, directory, sub_dir ):
         print directory
@@ -34,7 +40,11 @@ class BatchWindow:
     def process_file(self, file_path, sub_dir):
         print file_path, sub_dir
         src_image = cv2.imread(file_path, cv2.CV_LOAD_IMAGE_COLOR)
+        
+        start = time.clock()
         dest_img = self.func_window.execute(src_image)
+        elapsed = (time.clock() - start)
+        print elapsed
 
     def __init__(self):
     
@@ -44,7 +54,8 @@ class BatchWindow:
         self.vbox = gtk.VBox( spacing = 5 )
         self.entry = gtk.Entry()
         executeButton = gtk.Button("Execute")
-        self.entry.set_text(os.getcwd())
+        #self.entry.set_text(os.getcwd())
+        self.entry.set_text("C:/Projetos/LensometroSVN2/imagens")
         
         executeButton.connect("clicked", self.on_ok_click)
         
