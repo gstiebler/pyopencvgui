@@ -101,8 +101,6 @@ class FuncWindow:
         TenDoublesType = c_double * 10
         int_stats = TenIntegersType(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
         double_stats = TenDoublesType(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-        num_ints = ctypes.c_uint32()
-        num_doubles = ctypes.c_int32()
         func_str = ""
         if self.func_module == "cv2":
             func_str = 'result = %s(src_image, %s)' % (self.func_str, params_str)
@@ -111,7 +109,7 @@ class FuncWindow:
             arr2 = dest_image.ctypes.data_as(ctypes.POINTER(ctypes.c_ubyte))
             func_str = '%s.%s(arr1, arr2, c_int(src_image.shape[0]), c_int(src_image.shape[1]), '
             if self.hasStats == "yes":
-                func_str = func_str + 'int_stats, double_stats, ctypes.byref(num_ints), ctypes.byref(num_doubles), '
+                func_str = func_str + 'int_stats, double_stats, '
             func_str = func_str + ' %s)'  
             func_str = func_str % (self.func_module, self.func_str, params_str)
             

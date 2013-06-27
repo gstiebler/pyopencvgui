@@ -148,7 +148,7 @@ void getAB( std::vector<Point> points, double &a, double &b )
 
 
 
-__declspec(dllexport) void __stdcall hEdgesMiddle(uchar *srcImgData, uchar *dstImgData, int height, int width, int *intStatsOutput, double *doubleStatsOutput, int *numIntOutput, int *numDoubleOutput, 
+__declspec(dllexport) void __stdcall hEdgesMiddle(uchar *srcImgData, uchar *dstImgData, int height, int width, int *intStatsOutput, double *doubleStatsOutput,  
 												  int thresh, int delta, int minGreen, int minGray, int minRed)
 {
 	Image8Bits src(srcImgData, width, height);
