@@ -245,9 +245,9 @@ __declspec(dllexport) void __stdcall hEdgesMiddle(uchar *srcImgData, uchar *dstI
 	squareWidth = B2 - B1;
 	printf("Width: %lf\n", squareWidth);
 
-	/*doubleStatsOutput[0] = A1;
+	doubleStatsOutput[0] = A1;
 	doubleStatsOutput[1] = B1;
 	doubleStatsOutput[2] = A2;
 	doubleStatsOutput[3] = B2;
-	doubleStatsOutput[4] = squareWidth;*/
+	doubleStatsOutput[4] = squareWidth;
 }
