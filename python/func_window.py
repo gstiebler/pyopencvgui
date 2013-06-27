@@ -31,10 +31,12 @@ class FuncWindow:
         self.widget_params.append(widget)
 
     def hscale_callback(self, adjustment, data=None):
-        self.execute()
+        dest_image = self.execute( self.output_window.get_src_image() )
+        self.output_window.setCurrentImage(dest_image)
         
     def combobox_callback(self, combobox, user_data):
-        self.execute()
+        dest_image = self.execute( self.output_window.get_src_image() )
+        self.output_window.setCurrentImage(dest_image)
         
     def get_xml_text( node ):
         return node[0].firstChild.data
@@ -94,13 +96,19 @@ class FuncWindow:
         if self.srcDataType == "8bits":
             src_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY)
         
+        TenIntegersType = c_int * 10
+        TenDoublesType = c_double * 10
+        int_stats = TenIntegersType()
+        double_stats = TenDoublesType()
+        
         func_str = ""
         if self.func_module == "cv2":
             func_str = 'result = %s(src_image, %s)' % (self.func_str, params_str)
         elif self.func_module == "mylib":
             arr1 = src_image.ctypes.data_as(ctypes.POINTER(ctypes.c_ubyte))
             arr2 = dest_image.ctypes.data_as(ctypes.POINTER(ctypes.c_ubyte))
-            func_str = '%s.%s(arr1, arr2, c_int(src_image.shape[0]), c_int(src_image.shape[1]), %s)' % (self.func_module, self.func_str, params_str)
+            func_str = '%s.%s(arr1, arr2, c_int(src_image.shape[0]), c_int(src_image.shape[1]), %s)' 
+            func_str = func_str % (self.func_module, self.func_str, params_str)
             
         print func_str
         exec func_str
