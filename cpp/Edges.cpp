@@ -116,7 +116,7 @@ void hEdges2(Image8Bits &src, ImageRGB &dst, int thresh, int delta)
 void getAB( std::vector<Point> points, double &a, double &b )
 {
 	double factor = 0.1;
-	int margin = factor * points.size();
+	int margin = (int)(factor * points.size());
 	int halfSize = points.size() / 2;
 	vector<double> as;
 	double currA;
@@ -126,8 +126,8 @@ void getAB( std::vector<Point> points, double &a, double &b )
 	{
 		difX = points[p]._x - points[p + halfSize]._x;
 		difY = points[p]._y - points[p + halfSize]._y;
-		if( difY != 0);
-		currA = difX * 1.0 / difY;
+		if( difY != 0)
+			currA = difX * 1.0 / difY;
 		as.push_back( currA );
 	}
 
@@ -136,7 +136,7 @@ void getAB( std::vector<Point> points, double &a, double &b )
 
 	vector<double> bs;
 	double currB;
-	for(int p(margin); p < points.size() - margin; ++p)
+	for(int p(margin); p < (int)points.size() - margin; ++p)
 	{
 		currB = points[p]._x - a * points[p]._y;
 		bs.push_back( currB );
@@ -148,8 +148,8 @@ void getAB( std::vector<Point> points, double &a, double &b )
 
 
 
-__declspec(dllexport) void __stdcall hEdgesMiddle(uchar *srcImgData, uchar *dstImgData, int *intStatsOutput, double *doubleStatsOutput, int *numIntOutput, int *numDoubleOutput,
-												  int height, int width, int thresh, int delta, int minGreen, int minGray, int minRed)
+__declspec(dllexport) void __stdcall hEdgesMiddle(uchar *srcImgData, uchar *dstImgData, int height, int width, int *intStatsOutput, double *doubleStatsOutput, int *numIntOutput, int *numDoubleOutput, 
+												  int thresh, int delta, int minGreen, int minGray, int minRed)
 {
 	Image8Bits src(srcImgData, width, height);
 	ImageRGB dst(dstImgData, width, height);
@@ -245,9 +245,9 @@ __declspec(dllexport) void __stdcall hEdgesMiddle(uchar *srcImgData, uchar *dstI
 	squareWidth = B2 - B1;
 	printf("Width: %lf\n", squareWidth);
 
-	doubleStatsOutput[0] = A1;
+	/*doubleStatsOutput[0] = A1;
 	doubleStatsOutput[1] = B1;
 	doubleStatsOutput[2] = A2;
 	doubleStatsOutput[3] = B2;
-	doubleStatsOutput[4] = squareWidth;
+	doubleStatsOutput[4] = squareWidth;*/
 }

@@ -72,6 +72,7 @@ class FuncWindow:
         self.func_module = get_xml_text(function_xml.getElementsByTagName("srcLib"))
         self.srcDataType = get_xml_text(function_xml.getElementsByTagName("sourceDataType"))
         self.destDataType = get_xml_text(function_xml.getElementsByTagName("destDataType"))
+        self.hasStats = get_xml_text(function_xml.getElementsByTagName("hasStats")) 
         self.window.set_title(self.func_str)
         
         params = function_xml.getElementsByTagName("params")[0].getElementsByTagName("param")
@@ -100,14 +101,18 @@ class FuncWindow:
         TenDoublesType = c_double * 10
         int_stats = TenIntegersType()
         double_stats = TenDoublesType()
-        
+        num_ints = ctypes.c_uint32()
+        num_doubles = ctypes.c_int32()
         func_str = ""
         if self.func_module == "cv2":
             func_str = 'result = %s(src_image, %s)' % (self.func_str, params_str)
         elif self.func_module == "mylib":
             arr1 = src_image.ctypes.data_as(ctypes.POINTER(ctypes.c_ubyte))
             arr2 = dest_image.ctypes.data_as(ctypes.POINTER(ctypes.c_ubyte))
-            func_str = '%s.%s(arr1, arr2, c_int(src_image.shape[0]), c_int(src_image.shape[1]), %s)' 
+            func_str = '%s.%s(arr1, arr2, c_int(src_image.shape[0]), c_int(src_image.shape[1]), '
+            if self.hasStats == "yes":
+                func_str = func_str + 'ctypes.byref(num_ints), ctypes.byref(num_doubles), int_stats, double_stats, '
+            func_str = func_str + ' %s)'  
             func_str = func_str % (self.func_module, self.func_str, params_str)
             
         print func_str
