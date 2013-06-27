@@ -73,6 +73,8 @@ class FuncWindow:
         self.srcDataType = get_xml_text(function_xml.getElementsByTagName("sourceDataType"))
         self.destDataType = get_xml_text(function_xml.getElementsByTagName("destDataType"))
         self.hasStats = get_xml_text(function_xml.getElementsByTagName("hasStats")) 
+        self.numIntStats = get_xml_text(function_xml.getElementsByTagName("numIntStats")) 
+        self.numDoubleStats = get_xml_text(function_xml.getElementsByTagName("numDoubleStats")) 
         self.window.set_title(self.func_str)
         
         params = function_xml.getElementsByTagName("params")[0].getElementsByTagName("param")
