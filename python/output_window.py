@@ -24,6 +24,9 @@ class OutputWindow:
     def set_info_label( self, label ):
         self.infoLabel.set_label( label )
         
+    def show( self ):
+        self.outputWindow.show()
+        
     def __init__(self, output_presenter):
         self.output_presenter = output_presenter
         self.gladeBuilder = gtk.glade.XML( "../glade/OutputWindow.glade", "mainWindow") 
