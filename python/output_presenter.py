@@ -4,22 +4,22 @@ import numpy
 
 from class_factory import Factory
 
-class OutputPresenter:
+def getRGB(image, x, y):
+    width = image.shape[1]
+    baseIndex = int(y * width * 3 + x * 3)
+    r = ord(image.data[baseIndex + 0])
+    g = ord(image.data[baseIndex + 1])
+    b = ord(image.data[baseIndex + 2])
+    return (r, g, b)
+    
+def setRGB(image, x, y, r, g, b):
+    width = image.shape[1]
+    baseIndex = int(y * width * 3 + x * 3)
+    image.data[baseIndex + 0] = chr(r)
+    image.data[baseIndex + 1] = chr(g)
+    image.data[baseIndex + 2] = chr(b)
 
-    def getRGB(image, x, y):
-        width = image.shape[1]
-        baseIndex = int(y * width * 3 + x * 3)
-        r = ord(image.data[baseIndex + 0])
-        g = ord(image.data[baseIndex + 1])
-        b = ord(image.data[baseIndex + 2])
-        return (r, g, b)
-        
-    def setRGB(image, x, y, r, g, b):
-        width = image.shape[1]
-        baseIndex = int(y * width * 3 + x * 3)
-        image.data[baseIndex + 0] = chr(r)
-        image.data[baseIndex + 1] = chr(g)
-        image.data[baseIndex + 2] = chr(b)
+class OutputPresenter:
     
     def setCurrentImage(self, image):
         self.currentImage = image
@@ -52,7 +52,7 @@ class OutputPresenter:
         (r, g, b) = getRGB(self.currentImage, zoomed_x, zoomed_y)
         
         str = '(%d, %d) -\t (%d, %d, %d)' % (zoomed_x, zoomed_y, r, g, b)
-        self.output_window.set_info_label(str)
+        self.outputWindow.set_info_label(str)
 
     def __init__(self):
         self.zoomFactor = 1
