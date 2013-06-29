@@ -24,9 +24,6 @@ class OutputWindow:
     def set_info_label( self, label ):
         self.infoLabel.set_label( label )
         
-    def show( self ):
-        self.outputWindow.show()
-        
     def __init__(self, output_presenter):
         self.output_presenter = output_presenter
         self.gladeBuilder = gtk.glade.XML( "../glade/OutputWindow.glade", "mainWindow") 
@@ -54,4 +51,5 @@ class OutputWindow:
         self.ySpin.connect("value_changed", self.on_spin_changed, None )
         
         self.outputWindow.move( 50, 300 )
+        self.outputWindow.show()
         

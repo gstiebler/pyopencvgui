@@ -22,7 +22,6 @@ class TestOutputPresenter(unittest.TestCase):
     def test_constructor(self):
         self.assertEqual(1, self._output_presenter.zoomFactor)
         assert self._output_presenter.outputWindow       
-        self.assertEqual(1, Factory.default_factory.output_window.show.call_count)
 
     def test_setCurrentImage(self):
         srcImage = self.loadImage()

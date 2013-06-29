@@ -3,21 +3,7 @@ import pygtk
 pygtk.require('2.0')
 import gtk
 import gtk.glade
-import cv2
-import numpy
-import ctypes
-import copy
-
-from ctypes import *
-# mylib = cdll.LoadLibrary("./libmyextension.so") 
-mylib = ctypes.WinDLL('../bin/imageProcessing.dll')
-
-def get_xml_text( node ):
-    if node.length > 0:
-        return node[0].firstChild.data
-    else:
-        return None
-
+        
 class FuncWindow:
 
     def add_param(self, widget, name):
@@ -31,116 +17,63 @@ class FuncWindow:
         hbox.show()
         label.show()
         widget.show()
-        self.widget_params.append(widget)
+        
+    def add_int_param( self, value, lower, upper ):
+        adj_params = "value = %s, " % value
+        adj_params += "lower = %s, " % lower
+        adj_params += "upper = %s" % upper
+        str_exec = "adj = gtk.Adjustment(%s)" % adj_params
+        exec str_exec
+        hscale = gtk.HScale(adj)
+        adj.set_step_increment(1)
+        adj.set_page_increment(1)
+        hscale.set_digits(0)
+        self.add_param(hscale, name)
+        hscale.connect("value-changed", self.hscale_callback, None)
+        self.int_widget_params.append(widget)
+        
+    def add_choice_param( self, str_options ):
+        combo = gtk.combo_box_new_text()
+        for option in str_options:
+            combo.append_text(option)
+            
+        combo.set_active(0)
+        combo.connect("changed", self.combobox_callback, None)
+            
+        self.add_param(combo, name)
+        self.choice_widget_params.append(widget)
+        
+    def get_int_params( self ):
+        params = []
+        for widget in self.int_widget_params:
+            params.append(widget.widget.get_value())   
+        return params
+        
+    def get_choice_params( self ):
+        params = []
+        for widget in self.int_widget_params:
+            params.append(widget.get_active_text())  
+        return params  
 
     def hscale_callback(self, adjustment, data=None):
-        dest_image = self.execute( self.output_window.get_src_image() )['dest_image']
-        self.output_window.setCurrentImage(dest_image)
+        self._func_presenter.execution_needed()
         
     def combobox_callback(self, combobox, user_data):
-        dest_image = self.execute( self.output_window.get_src_image() )['dest_image']
-        self.output_window.setCurrentImage(dest_image)
-        
-    def get_xml_text( node ):
-        return node[0].firstChild.data
-
-    def process_param(self, param):  
-        name = param.getAttribute("name")
-        type = param.getAttribute("type")
-        if type == 'int':
-            adj_params = "value = %s, " % get_xml_text(param.getElementsByTagName("value"))
-            adj_params += "lower = %s, " % get_xml_text(param.getElementsByTagName("lower"))
-            adj_params += "upper = %s" % get_xml_text(param.getElementsByTagName("upper"))
-            str_exec = "adj = gtk.Adjustment(%s)" % adj_params
-            exec str_exec
-            hscale = gtk.HScale(adj)
-            adj.set_step_increment(1)
-            adj.set_page_increment(1)
-            hscale.set_digits(0)
-            self.add_param(hscale, name)
-            hscale.connect("value-changed", self.hscale_callback, None)
-        elif type == 'choice':
-            combo = gtk.combo_box_new_text()
-            options = pieces[0].split(',')
-            for option in options:
-                combo.append_text(option.strip())
-                
-            combo.set_active(0)
-            combo.connect("changed", self.combobox_callback, None)
-                
-            self.add_param(combo, name)
-
-    def process_text(self, function_xml):
-        self.func_str = function_xml.getAttribute("name")
-        self.func_module = get_xml_text(function_xml.getElementsByTagName("srcLib"))
-        self.srcDataType = get_xml_text(function_xml.getElementsByTagName("sourceDataType"))
-        self.destDataType = get_xml_text(function_xml.getElementsByTagName("destDataType"))
-        self.hasStats = get_xml_text(function_xml.getElementsByTagName("hasStats")) 
-        self.numIntStats = get_xml_text(function_xml.getElementsByTagName("numIntStats")) 
-        self.numDoubleStats = get_xml_text(function_xml.getElementsByTagName("numDoubleStats")) 
-        self.window.set_title(self.func_str)
-        
-        params = function_xml.getElementsByTagName("params")[0].getElementsByTagName("param")
-        for param in params:
-            self.process_param(param)
-            
-    def execute(self, src_image):
-        params_str = ''
-        
-        for widget in self.widget_params:
-            if type(widget) is gtk.HScale:
-                params_str += '%d, ' % widget.get_value()
-            elif type(widget) is gtk.ComboBox:
-                params_str += '%s.%s, ' % (func_module, widget.get_active_text())
-        params_str = params_str[:-2]
-        
-        if self.destDataType == "8bits":
-            dest_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY)
-        else:
-            dest_image = copy.deepcopy(src_image)
-        
-        if self.srcDataType == "8bits":
-            src_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY)
-        
-        TenIntegersType = c_int * 10
-        TenDoublesType = c_double * 10
-        int_stats = TenIntegersType(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-        double_stats = TenDoublesType(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-        func_str = ""
-        if self.func_module == "cv2":
-            func_str = 'result = %s(src_image, %s)' % (self.func_str, params_str)
-        elif self.func_module == "mylib":
-            arr1 = src_image.ctypes.data_as(ctypes.POINTER(ctypes.c_ubyte))
-            arr2 = dest_image.ctypes.data_as(ctypes.POINTER(ctypes.c_ubyte))
-            func_str = '%s.%s(arr1, arr2, c_int(src_image.shape[0]), c_int(src_image.shape[1]), '
-            if self.hasStats == "yes":
-                func_str = func_str + 'int_stats, double_stats, '
-            func_str = func_str + ' %s)'  
-            func_str = func_str % (self.func_module, self.func_str, params_str)
-            
-        print func_str
-        exec func_str
-        
-        if self.destDataType == "8bits":
-            dest_image = cv2.cvtColor(dest_image, cv2.COLOR_GRAY2BGR)
-            
-        return {'dest_image': dest_image, 'int_stats': int_stats, 'double_stats': double_stats}
+        self._func_presenter.execution_needed()
        
     def execute_button_callback(self, widget, data=None):
-        dest_image = self.execute( self.output_window.get_src_image() )['dest_image']
-        self.output_window.setCurrentImage(dest_image)
+        self._func_presenter.execution_needed()
 
-    def __init__(self, text, output_window):
-        self.widget_params = []
-        self.output_window = output_window
+    def __init__(self, func_presenter):
+        self.int_widget_params = []
+        self.choice_widget_params = []
+        self._func_presenter = func_presenter
     
         self.gladeBuilder = gtk.glade.XML( "../glade/FuncWindow.glade", "mainWindow") 
         self.window = self.gladeBuilder.get_widget("mainWindow")
         self.main_vbox = self.gladeBuilder.get_widget("mainVBox")
         self.execute_button = self.gladeBuilder.get_widget("executeButton")
         self.execute_button.connect("clicked", self.execute_button_callback, None)
-        
-        self.process_text(text)
         
         self.window.show()
         self.window.move( 600, 50 )

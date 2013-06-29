@@ -58,5 +58,4 @@ class OutputPresenter:
         self.zoomFactor = 1
     
         self.outputWindow = Factory.default_factory.new_output_window( self )
-        self.outputWindow.show()
         
