@@ -13,8 +13,8 @@ class GtkWindowFactory:
     def new_func_window( self, function_xml, outputWindow ):
         return func_window.FuncWindow(function_xml, outputWindow)
     
-    def new_output_window( self ):
-        return output_window.OutputWindow()
+    def new_output_window( self, presenter ):
+        return output_window.OutputWindow( presenter )
         
     def new_capture_window( self, outputWindow ):
         return capture_window.CaptureWindow( outputWindow )
