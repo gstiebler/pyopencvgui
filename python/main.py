@@ -1,120 +1,14 @@
 
-#!/usr/bin/env python
-
 import pygtk
 pygtk.require('2.0')
 import gtk
-import gtk.glade
-import cv2
-import numpy
-from xml.dom.minidom import parse, parseString
 
-import output_window
-import func_window
-import capture_window
-import batch_window
-
-class MyProgram:
-
-    def load_image(self, file_name):
-        print file_name, 'selected'
-        srcImage = cv2.imread(file_name, cv2.CV_LOAD_IMAGE_COLOR)
-        self.outputWindow.set_src_image(srcImage)
-
-    def openFileCallback(self, widget, data=None):
-        dialog = gtk.FileChooserDialog("Open..",
-                               None,
-                               gtk.FILE_CHOOSER_ACTION_OPEN,
-                               (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-                                gtk.STOCK_OPEN, gtk.RESPONSE_OK))
-        dialog.set_default_response(gtk.RESPONSE_OK)
-
-        filter = gtk.FileFilter()
-        filter.set_name("All files")
-        filter.add_pattern("*")
-        dialog.add_filter(filter)
-
-        filter = gtk.FileFilter()
-        filter.set_name("Images")
-        filter.add_mime_type("image/png")
-        filter.add_mime_type("image/jpeg")
-        filter.add_mime_type("image/gif")
-        filter.add_pattern("*.png")
-        filter.add_pattern("*.jpg")
-        filter.add_pattern("*.gif")
-        filter.add_pattern("*.tif")
-        filter.add_pattern("*.xpm")
-        dialog.add_filter(filter)
-
-        response = dialog.run()
-        if response == gtk.RESPONSE_OK:
-            self.load_image(dialog.get_filename())
-        elif response == gtk.RESPONSE_CANCEL:
-            print 'Closed, no files selected'
-        dialog.destroy()
-
-    def addFuncCallback(self, widget, data=None):
-        buffer = self.newFuncTextView.get_buffer()
-        (begin, end) = buffer.get_bounds()
-        text = buffer.get_text(begin, end)
-    
-        func_window.FuncWindow(text, self.outputWindow)
-
-    def func1_callback(self, widget, function_xml):
-        func_window.FuncWindow(function_xml, self.outputWindow)
-
-    def add_custom_function(self, function_xml):
-        func_button = gtk.Button( function_xml.getAttribute("name") )
-        self.vbox1.pack_end( func_button )
-        func_button.show()
-        func_button.connect("clicked", self.func1_callback, function_xml)
-        
-    def captureCallback(self, widget, data=None):
-        capture_window.CaptureWindow(self.outputWindow)
-        
-    def on_batch_click(self, widget, data=None):
-        batch_window.BatchWindow()
-        
-    def __init__(self):  
-        gladeBuilder = gtk.glade.XML( "../glade/MainWindow.glade", "mainWindow") 
-        app_window = gladeBuilder.get_widget("mainWindow")
-        openFileButton = gladeBuilder.get_widget("openFileButton")
-        captureButton = gladeBuilder.get_widget("captureButton")
-        batchButton = gladeBuilder.get_widget("batchButton")
-        addFuncButton = gladeBuilder.get_widget("addFuncButton")
-        #self.newFuncTextView = gladeBuilder.get_widget("newFuncTextView")
-
-        app_window.connect("delete_event", lambda w,e: gtk.main_quit())
-        openFileButton.connect("clicked", self.openFileCallback, None)
-        captureButton.connect("clicked", self.captureCallback, None)
-        addFuncButton.connect("clicked", self.addFuncCallback, None)
-        batchButton.connect("clicked", self.on_batch_click, None)
-        self.vbox1 = gladeBuilder.get_widget( "vbox1" )
-        
-        app_window.resize(200, 300);
-           
-        dom1 = parse('functions.xml')
-        functions = dom1.getElementsByTagName("function")
-        for function in functions:
-            self.add_custom_function( function )    
-            
-        app_window.set_title('Main Window')
-        app_window.show()
-        self.outputWindow = output_window.OutputWindow()
-
-        self.load_image("../bin/dj.bmp")
-        
-        return
+import main_presenter
 
 def main():
     gtk.main()
     return 0
 
 if __name__ == "__main__":
-    MyProgram()
+    main_presenter.MainPresenter()
     main()
-
-
-
-
-
