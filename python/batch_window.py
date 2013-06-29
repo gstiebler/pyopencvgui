@@ -9,6 +9,17 @@ from xml.dom.minidom import parse, parseString
 
 import func_window
 
+def stats_to_line( double_stats, int_stats, num_double, num_int ):
+    line = ""
+    for i in range(num_double):
+        line = line + "{0}; ".format(double_stats[i])
+        
+    for i in range(num_int):
+        line = line + "{0}; ".format(int_stats[i])
+        
+        
+    return line + "\n"
+
 class BatchWindow:
 
     def func_callback(self, widget, function_xml):
@@ -20,8 +31,10 @@ class BatchWindow:
         self.last_radio.connect("clicked", self.func_callback, function_xml)
         
     def on_ok_click(self, widget):
+        self.stats_file = open(self.statsPathEntry.get_text(), "w")
+    
         start = time.clock()
-        base_path = self.entry.get_text()
+        base_path = self.imagesPathEntry.get_text()
         for sub_dir in os.listdir(base_path):
             complete_path = os.path.join(base_path, sub_dir)
             if os.path.isdir(complete_path):
@@ -29,8 +42,9 @@ class BatchWindow:
                   
         elapsed = (time.clock() - start)
         print " total time: {0}".format(elapsed)
-
         
+        self.stats_file.close()
+
     def process_dir( self, directory, sub_dir ):
         print directory
         for file in os.listdir(directory):
@@ -42,9 +56,17 @@ class BatchWindow:
         src_image = cv2.imread(file_path, cv2.CV_LOAD_IMAGE_COLOR)
         
         start = time.clock()
-        dest_img = self.func_window.execute(src_image)
+        func_return = self.func_window.execute(src_image)
         elapsed = (time.clock() - start)
         print elapsed
+        
+        dest_img = func_return['dest_image']
+        int_stats = func_return['int_stats']
+        double_stats = func_return['double_stats']
+        
+        line = stats_to_line( double_stats, int_stats, 8, 2 )
+        self.stats_file.write( line )
+        
 
     def __init__(self):
     
@@ -52,10 +74,11 @@ class BatchWindow:
         
         self.window = gtk.Window()
         self.vbox = gtk.VBox( spacing = 5 )
-        self.entry = gtk.Entry()
+        self.imagesPathEntry = gtk.Entry()
+        self.statsPathEntry = gtk.Entry()
         executeButton = gtk.Button("Execute")
-        #self.entry.set_text(os.getcwd())
-        self.entry.set_text("C:/Projetos/LensometroSVN2/imagens")
+        self.imagesPathEntry.set_text("C:/Projetos/LensometroSVN2/imagens")
+        self.statsPathEntry.set_text("C:/Projetos/LensometroSVN2/stats.csv")
         
         executeButton.connect("clicked", self.on_ok_click)
         
@@ -64,7 +87,8 @@ class BatchWindow:
         for function in functions:
             self.add_custom_function( function ) 
         
-        self.vbox.pack_start(self.entry, False, False, 5)
+        self.vbox.pack_start(self.imagesPathEntry, False, False, 5)
+        self.vbox.pack_start(self.statsPathEntry, False, False, 5)
         self.vbox.pack_start(executeButton, False, False, 5)
         
         self.window.add(self.vbox)

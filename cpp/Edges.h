@@ -20,7 +20,7 @@ __declspec(dllexport) void __stdcall hEdgesMiddle(uchar *srcImgData, uchar *dstI
 												  int *intStatsOutput, double *doubleStatsOutput, 
 												  int thresh, int delta, int minGreen, int minGray, int minRed);
 void hEdges2(Image8Bits &src, ImageRGB &dst, int thresh, int delta);
-void getAB( std::vector<Point> points, double &a, double &b );
+void getAB( std::vector<Point> points, double &a, double &b, double &stdDev );
 
 }
 

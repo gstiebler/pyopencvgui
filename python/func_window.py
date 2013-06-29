@@ -13,7 +13,10 @@ from ctypes import *
 mylib = ctypes.WinDLL('../bin/imageProcessing.dll')
 
 def get_xml_text( node ):
-    return node[0].firstChild.data
+    if node.length > 0:
+        return node[0].firstChild.data
+    else:
+        return None
 
 class FuncWindow:
 
@@ -31,11 +34,11 @@ class FuncWindow:
         self.widget_params.append(widget)
 
     def hscale_callback(self, adjustment, data=None):
-        dest_image = self.execute( self.output_window.get_src_image() )
+        dest_image = self.execute( self.output_window.get_src_image() )['dest_image']
         self.output_window.setCurrentImage(dest_image)
         
     def combobox_callback(self, combobox, user_data):
-        dest_image = self.execute( self.output_window.get_src_image() )
+        dest_image = self.execute( self.output_window.get_src_image() )['dest_image']
         self.output_window.setCurrentImage(dest_image)
         
     def get_xml_text( node ):
@@ -120,10 +123,11 @@ class FuncWindow:
         
         if self.destDataType == "8bits":
             dest_image = cv2.cvtColor(dest_image, cv2.COLOR_GRAY2BGR)
-        return dest_image
+            
+        return {'dest_image': dest_image, 'int_stats': int_stats, 'double_stats': double_stats}
        
     def execute_button_callback(self, widget, data=None):
-        dest_image = self.execute( self.output_window.get_src_image() )
+        dest_image = self.execute( self.output_window.get_src_image() )['dest_image']
         self.output_window.setCurrentImage(dest_image)
 
     def __init__(self, text, output_window):

@@ -66,8 +66,8 @@
         <sourceDataType>8bits</sourceDataType>
         <destDataType>RGB</destDataType>
         <hasStats>yes</hasStats>
-       <numIntStats>0</numIntStats>
-       <numDoubleStats>5</numDoubleStats>
+       <numIntStats>2</numIntStats>
+       <numDoubleStats>8</numDoubleStats>
 		<params>
 			<param name="Threshold" type="int">
 				<value>10</value>
@@ -80,7 +80,7 @@
 				<upper>100</upper>
 			</param>
 			<param name="minGreen" type="int">
-				<value>5</value>
+				<value>7</value>
 				<lower>0</lower>
 				<upper>50</upper>
 			</param>

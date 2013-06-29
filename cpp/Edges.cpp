@@ -113,7 +113,7 @@ void hEdges2(Image8Bits &src, ImageRGB &dst, int thresh, int delta)
 
 
 
-void getAB( std::vector<Point> points, double &a, double &b )
+void getAB( std::vector<Point> points, double &a, double &b, double &stdDev )
 {
 	double factor = 0.1;
 	int margin = (int)(factor * points.size());
@@ -144,6 +144,17 @@ void getAB( std::vector<Point> points, double &a, double &b )
 	
 	sort( bs.begin(), bs.end() );
 	b = bs[ bs.size() / 2 ];
+
+	//calc std dev
+	double dif, sum = 0.0;
+	for(int p(margin); p < (int)points.size() - margin; ++p)
+	{
+		currB = points[p]._x - a * points[p]._y;
+		dif = fabs(b - currB);
+		sum += dif * dif;
+	}
+
+	stdDev = sqrt( sum );
 }
 
 
@@ -238,16 +249,25 @@ __declspec(dllexport) void __stdcall hEdgesMiddle(uchar *srcImgData, uchar *dstI
 	}
 
 	double A1, B1, A2, B2, squareWidth;
-	getAB( leftPoints, A1, B1 );
+	double stdDevLeft, stdDevRight;
+	getAB( leftPoints, A1, B1, stdDevLeft );
 	printf("A and B: %lf %lf\n", A1, B1 );
-	getAB( rightPoints, A2, B2 );
+	getAB( rightPoints, A2, B2, stdDevRight );
 	printf("A and B: %lf %lf\n", A2, B2 );
 	squareWidth = B2 - B1;
 	printf("Width: %lf\n", squareWidth);
+	printf("Std Devs: %lf, %lf\n", stdDevLeft, stdDevRight);
+	printf("Num points: %d, %d\n", leftPoints.size(), rightPoints.size());
 
 	doubleStatsOutput[0] = A1;
 	doubleStatsOutput[1] = B1;
 	doubleStatsOutput[2] = A2;
 	doubleStatsOutput[3] = B2;
-	doubleStatsOutput[4] = squareWidth;
+	doubleStatsOutput[4] = stdDevLeft;
+	doubleStatsOutput[5] = stdDevRight;
+	doubleStatsOutput[6] = stdDevRight;
+	doubleStatsOutput[7] = squareWidth;
+
+	intStatsOutput[0] = leftPoints.size();
+	intStatsOutput[1] = rightPoints.size();
 }
