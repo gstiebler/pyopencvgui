@@ -1,6 +1,7 @@
 
 import cv2
 import numpy
+import os
 from xml.dom.minidom import parse, parseString
 
 from class_factory import Factory
@@ -30,9 +31,9 @@ class MainPresenter:
         self.main_window = Factory.default_factory.new_main_window( self )
         self.outputWindow = Factory.default_factory.new_output_window()
                
-        dom1 = parse('functions.xml')
+        dom1 = parse(os.path.dirname(__file__) + "/functions.xml")
         functions = dom1.getElementsByTagName("function")
         for function in functions:
             self.main_window.add_custom_function( function ) 
             
-        self.load_image("../bin/dj.bmp")
+        self.load_image(os.path.dirname(__file__) + "/../bin/dj.bmp")
