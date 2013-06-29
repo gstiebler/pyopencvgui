@@ -9,8 +9,8 @@ from xml.dom.minidom import parse, parseString
 
 import func_window
 
-def stats_to_line( double_stats, int_stats, num_double, num_int ):
-    line = ""
+def stats_to_line( double_stats, int_stats, num_double, num_int, file, sub_dir ):
+    line = "{0}; {1};".format(file, sub_dir)
     for i in range(num_double):
         line = line + "{0}; ".format(double_stats[i])
         
@@ -48,10 +48,10 @@ class BatchWindow:
     def process_dir( self, directory, sub_dir ):
         print directory
         for file in os.listdir(directory):
-            file_path = os.path.join(directory, file)
-            self.process_file( file_path, sub_dir )
+            self.process_file( directory, file, sub_dir )
             
-    def process_file(self, file_path, sub_dir):
+    def process_file(self, directory, file, sub_dir):
+        file_path = os.path.join(directory, file)
         print file_path, sub_dir
         src_image = cv2.imread(file_path, cv2.CV_LOAD_IMAGE_COLOR)
         
@@ -64,7 +64,7 @@ class BatchWindow:
         int_stats = func_return['int_stats']
         double_stats = func_return['double_stats']
         
-        line = stats_to_line( double_stats, int_stats, 8, 2 )
+        line = stats_to_line( double_stats, int_stats, 7, 2, file, sub_dir )
         self.stats_file.write( line )
         
 

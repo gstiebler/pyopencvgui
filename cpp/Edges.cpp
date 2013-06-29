@@ -265,8 +265,7 @@ __declspec(dllexport) void __stdcall hEdgesMiddle(uchar *srcImgData, uchar *dstI
 	doubleStatsOutput[3] = B2;
 	doubleStatsOutput[4] = stdDevLeft;
 	doubleStatsOutput[5] = stdDevRight;
-	doubleStatsOutput[6] = stdDevRight;
-	doubleStatsOutput[7] = squareWidth;
+	doubleStatsOutput[6] = squareWidth;
 
 	intStatsOutput[0] = leftPoints.size();
 	intStatsOutput[1] = rightPoints.size();
