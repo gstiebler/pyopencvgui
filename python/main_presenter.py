@@ -7,6 +7,7 @@ from xml.dom.minidom import parse, parseString
 from class_factory import Factory
 import output_presenter
 import func_presenter
+import batch_presenter
 
 class MainPresenter:
     
@@ -24,7 +25,7 @@ class MainPresenter:
         Factory.default_factory.new_capture_window( self._output_presenter )
         
     def batch_window_button_clicked(self):
-        Factory.default_factory.new_batch_window()
+        batch_presenter.BatchPresenter()
         
     def add_func_clicked( self, text ):
        Factory.default_factory.new_func_window(text, self._output_presenter )

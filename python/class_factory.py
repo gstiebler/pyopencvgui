@@ -19,8 +19,8 @@ class GtkWindowFactory:
     def new_capture_window( self, outputWindow ):
         return capture_window.CaptureWindow( outputWindow )
     
-    def new_batch_window( self ):
-        return batch_window.BatchWindow()
+    def new_batch_window( self, presenter ):
+        return batch_window.BatchWindow( presenter )
     
         
 class Factory:
