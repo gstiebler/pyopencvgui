@@ -35,7 +35,6 @@ class BatchPresenter:
         elapsed = (time.clock() - start)
         print elapsed
         
-        dest_img = func_return['dest_image']
         int_stats = func_return['int_stats']
         double_stats = func_return['double_stats']
         

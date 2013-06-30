@@ -25,6 +25,6 @@ class TestWindowFactory:
         self.capture_window = MagicMock() 
         return self.capture_window
     
-    def new_batch_window( self ):
+    def new_batch_window( self, presenter ):
         self.batch_window = MagicMock() 
         return self.batch_window

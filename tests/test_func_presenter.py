@@ -8,8 +8,8 @@ from xml.dom.minidom import parse, parseString
 sys.path.append('../python')
 import func_presenter
 from class_factory import Factory
-from mock import MagicMock
 import test_factory
+from mock import MagicMock
 
 class TestFuncPresenter(unittest.TestCase):
 
