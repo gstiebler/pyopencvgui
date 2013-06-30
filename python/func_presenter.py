@@ -89,7 +89,6 @@ class FuncPresenter:
             func_str = func_str + ' %s)'  
             func_str = func_str % (self.func_module, self.func_str, params_str)
             
-        print func_str
         exec func_str
         
         if self.destDataType == "8bits":

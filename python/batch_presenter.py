@@ -21,13 +21,11 @@ from class_factory import Factory
 class BatchPresenter:
 
     def process_dir( self, directory, sub_dir ):
-        print directory
         for file in os.listdir(directory):
             self.process_file( directory, file, sub_dir )
             
     def process_file(self, directory, file, sub_dir):
         file_path = os.path.join(directory, file)
-        print file_path, sub_dir
         src_image = cv2.imread(file_path, cv2.CV_LOAD_IMAGE_COLOR)
         
         start = time.clock()

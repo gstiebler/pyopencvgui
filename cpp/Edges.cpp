@@ -115,6 +115,12 @@ void hEdges2(Image8Bits &src, ImageRGB &dst, int thresh, int delta)
 
 void getAB( std::vector<Point> points, double &a, double &b, double &stdDev )
 {
+	if( points.size() < 2 )
+	{
+		stdDev = -1.0;
+		return;
+	}
+
 	double factor = 0.1;
 	int margin = (int)(factor * points.size());
 	int halfSize = points.size() / 2;
