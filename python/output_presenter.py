@@ -32,6 +32,9 @@ class OutputPresenter:
         self.setCurrentImage(image)
         self.src_image = image
         
+    def get_src_image( self ):
+        return self.src_image
+        
     def show_image(self, image):
         height = image.shape[0]
         width = image.shape[1]

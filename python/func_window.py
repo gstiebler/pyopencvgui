@@ -18,7 +18,7 @@ class FuncWindow:
         label.show()
         widget.show()
         
-    def add_int_param( self, value, lower, upper ):
+    def add_int_param( self, name, value, lower, upper ):
         adj_params = "value = %s, " % value
         adj_params += "lower = %s, " % lower
         adj_params += "upper = %s" % upper
@@ -30,9 +30,9 @@ class FuncWindow:
         hscale.set_digits(0)
         self.add_param(hscale, name)
         hscale.connect("value-changed", self.hscale_callback, None)
-        self.int_widget_params.append(widget)
+        self.int_widget_params.append(hscale)
         
-    def add_choice_param( self, str_options ):
+    def add_choice_param( self, name, str_options ):
         combo = gtk.combo_box_new_text()
         for option in str_options:
             combo.append_text(option)
@@ -41,17 +41,17 @@ class FuncWindow:
         combo.connect("changed", self.combobox_callback, None)
             
         self.add_param(combo, name)
-        self.choice_widget_params.append(widget)
+        self.choice_widget_params.append(combo)
         
     def get_int_params( self ):
         params = []
         for widget in self.int_widget_params:
-            params.append(widget.widget.get_value())   
+            params.append(widget.get_value())   
         return params
         
     def get_choice_params( self ):
         params = []
-        for widget in self.int_widget_params:
+        for widget in self.choice_widget_params:
             params.append(widget.get_active_text())  
         return params  
 
@@ -63,6 +63,9 @@ class FuncWindow:
        
     def execute_button_callback(self, widget, data=None):
         self._func_presenter.execution_needed()
+        
+    def set_title( self, title ):
+        self.window.set_title( title )
 
     def __init__(self, func_presenter):
         self.int_widget_params = []

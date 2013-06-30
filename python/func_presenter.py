@@ -43,14 +43,14 @@ class FuncPresenter:
             value = get_xml_text(param.getElementsByTagName("value"))
             lower = get_xml_text(param.getElementsByTagName("lower"))
             upper = get_xml_text(param.getElementsByTagName("upper"))
-            self._func_window.add_int_param( value, lower, upper )
+            self._func_window.add_int_param( name, value, lower, upper )
         elif type == 'choice':
             options = pieces[0].split(',')
             str_options = []
             for option in options:
                 str_options.append(option.strip())
                 
-            self._func_window.add_choice_param( str_options )
+            self._func_window.add_choice_param( name, str_options )
             
     def execute(self, src_image):
         int_params = self._func_window.get_int_params()
