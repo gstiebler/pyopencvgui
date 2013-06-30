@@ -257,13 +257,8 @@ __declspec(dllexport) void __stdcall hEdgesMiddle(uchar *srcImgData, uchar *dstI
 	double A1, B1, A2, B2, squareWidth;
 	double stdDevLeft, stdDevRight;
 	getAB( leftPoints, A1, B1, stdDevLeft );
-	printf("A and B: %lf %lf\n", A1, B1 );
 	getAB( rightPoints, A2, B2, stdDevRight );
-	printf("A and B: %lf %lf\n", A2, B2 );
 	squareWidth = B2 - B1;
-	printf("Width: %lf\n", squareWidth);
-	printf("Std Devs: %lf, %lf\n", stdDevLeft, stdDevRight);
-	printf("Num points: %d, %d\n", leftPoints.size(), rightPoints.size());
 
 	doubleStatsOutput[0] = A1;
 	doubleStatsOutput[1] = B1;

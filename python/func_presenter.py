@@ -5,6 +5,7 @@ import ctypes
 import copy
 
 from class_factory import Factory
+from print_stats import PrintStats
 
 from ctypes import *
 # mylib = cdll.LoadLibrary("./libmyextension.so") 
@@ -90,6 +91,8 @@ class FuncPresenter:
             func_str = func_str % (self.func_module, self.func_str, params_str)
             
         exec func_str
+        
+        PrintStats().printStats( self.func_str, int_stats, double_stats )
         
         if self.destDataType == "8bits":
             dest_image = cv2.cvtColor(dest_image, cv2.COLOR_GRAY2BGR)
