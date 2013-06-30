@@ -13,7 +13,7 @@ class TestWindowFactory:
         self.main_window = MagicMock() 
         return self.main_window
         
-    def new_func_window( self, function_xml, outputWindow ):
+    def new_func_window( self, presenter ):
         self.func_window = MagicMock() 
         return self.func_window
     

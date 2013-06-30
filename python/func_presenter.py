@@ -26,7 +26,7 @@ class FuncPresenter:
         self.hasStats = get_xml_text(function_xml.getElementsByTagName("hasStats")) 
         self.numIntStats = get_xml_text(function_xml.getElementsByTagName("numIntStats")) 
         self.numDoubleStats = get_xml_text(function_xml.getElementsByTagName("numDoubleStats")) 
-        self.window.set_title(self.func_str)
+        self._func_window.set_title(self.func_str)
         
         params = function_xml.getElementsByTagName("params")[0].getElementsByTagName("param")
         for param in params:
@@ -58,7 +58,7 @@ class FuncPresenter:
         
         params_str = ''
         for param in int_params:
-            params_str += '%d, ' % param.get_value()
+            params_str += '%d, ' % param
             
         for param in choice_params:
             params_str += '%s.%s, ' % (self.func_module, widget.get_active_text())
@@ -97,9 +97,9 @@ class FuncPresenter:
             
         return {'dest_image': dest_image, 'int_stats': int_stats, 'double_stats': double_stats}
         
-    def __init__(self, text, output_presenter):
+    def __init__(self, function_xml, output_presenter):
         self._output_presenter = output_presenter
         
         self._func_window = Factory.default_factory.new_func_window( self )
-        self._func_window.process_text(text)
+        self.process_text( function_xml )
         

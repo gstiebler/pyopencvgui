@@ -6,6 +6,7 @@ from xml.dom.minidom import parse, parseString
 
 from class_factory import Factory
 import output_presenter
+import func_presenter
 
 class MainPresenter:
     
@@ -17,7 +18,7 @@ class MainPresenter:
         self.load_image(file_name)
         
     def custom_func_button_clicked(self, function_xml):
-        Factory.default_factory.new_func_window( function_xml, self._output_presenter )
+        func_presenter.FuncPresenter( function_xml, self._output_presenter )
         
     def capture_window_button_clicked(self):
         Factory.default_factory.new_capture_window( self._output_presenter )

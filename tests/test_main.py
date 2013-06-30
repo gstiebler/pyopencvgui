@@ -14,11 +14,14 @@ class TestMainPresenter(unittest.TestCase):
     def setUp(self):
         Factory.default_factory = test_factory.TestWindowFactory()
         self.output_presenter_patcher = mock.patch('output_presenter.OutputPresenter')
+        self.func_presenter_patcher = mock.patch('func_presenter.FuncPresenter')
         self.output_presenter_patcher.start()
+        self.func_presenter_patcher.start()
         self._presenter = main_presenter.MainPresenter()
         
     def tearDown(self):
         self.output_presenter_patcher.stop()
+        self.func_presenter_patcher.stop()
 
     def test_constructor(self):
         assert Factory.default_factory.main_window 
@@ -36,7 +39,6 @@ class TestMainPresenter(unittest.TestCase):
         
     def test_custom_func_button_clicked(self):
         self._presenter.custom_func_button_clicked( 2 )
-        assert Factory.default_factory.func_window 
         
     def test_capture_window_button_clicked(self):
         self._presenter.capture_window_button_clicked()
