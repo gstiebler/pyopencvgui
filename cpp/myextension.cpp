@@ -11,6 +11,8 @@
 
 using namespace std;
 
+#define DST_THRESH 128
+
 extern "C" {
   
 __declspec(dllexport) void __stdcall myfunc(uchar *srcImgData, uchar *dstImgData, int height, int width, int thresh)
@@ -64,7 +66,7 @@ void initDirections(char *vX, char *vY, char *vXi, char *vYi)
 
 enum FE_RESPONSE { E_ALL_BLACK = -1, E_ALL_WHITE = -2 };
 
-int findFirstWhite( Image8Bits &src, int startIndex, int xIni, int yIni, char vX[16], char vY[16], uchar selfValue )
+int findFirstWhite( Image8Bits &src, ImageRGB &dst, int startIndex, int xIni, int yIni, char vX[16], char vY[16], uchar selfValue )
 {    
 	int deltaX, deltaY;
     int xIndex, yIndex;
@@ -78,7 +80,7 @@ int findFirstWhite( Image8Bits &src, int startIndex, int xIni, int yIni, char vX
             break;
 
         uchar currValue = src.pix( xIndex, yIndex );
-        if(currValue > selfValue)
+		if(currValue > selfValue || dst.getLum( xIndex, yIndex ) > DST_THRESH )
             return i % 8;
     }    
 	return -1;
@@ -86,7 +88,7 @@ int findFirstWhite( Image8Bits &src, int startIndex, int xIni, int yIni, char vX
 
 
 
-int findFirstBlack( Image8Bits &src, int startIndex, int xIni, int yIni, char vX[16], char vY[16], uchar selfValue )
+int findFirstBlack( Image8Bits &src, ImageRGB &dst, int startIndex, int xIni, int yIni, char vX[16], char vY[16], uchar selfValue )
 {
 	int deltaX, deltaY;
     int xIndex, yIndex;
@@ -100,7 +102,7 @@ int findFirstBlack( Image8Bits &src, int startIndex, int xIni, int yIni, char vX
             break;
 
         uchar currValue = src.pix(xIndex, yIndex);
-        if(currValue <= selfValue)
+        if(currValue <= selfValue && dst.getLum( xIndex, yIndex ) < DST_THRESH )
             return i % 8;
     }
 
@@ -109,15 +111,15 @@ int findFirstBlack( Image8Bits &src, int startIndex, int xIni, int yIni, char vX
 
 
 
-int findWhiteBlackEdge(Image8Bits &src, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex, uchar selfValue)
+int findWhiteBlackEdge(Image8Bits &src, ImageRGB &dst, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex, uchar selfValue)
 {
-	int firstWhiteIndex = findFirstWhite( src, startIndex, xIni, yIni, vX, vY, selfValue );   
+	int firstWhiteIndex = findFirstWhite( src, dst, startIndex, xIni, yIni, vX, vY, selfValue );   
     if( firstWhiteIndex == -1 )
         return E_ALL_BLACK;
 
     // finds black pixel after the first white pixel
     startIndex = (firstWhiteIndex + 1) % 8;
-	int firstBlackIndex = findFirstBlack( src, startIndex, xIni, yIni, vX, vY, selfValue ); 
+	int firstBlackIndex = findFirstBlack( src, dst, startIndex, xIni, yIni, vX, vY, selfValue ); 
     if( firstBlackIndex == -1 )
         return E_ALL_WHITE;
 
@@ -126,15 +128,15 @@ int findWhiteBlackEdge(Image8Bits &src, int xIni, int yIni, char vX[16], char vY
 
 
 
-int findBlackWhiteEdge(Image8Bits &src, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex, uchar selfValue)
+int findBlackWhiteEdge(Image8Bits &src, ImageRGB &dst, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex, uchar selfValue)
 {
-	int firstBlackIndex = findFirstBlack( src, startIndex, xIni, yIni, vX, vY, selfValue ); 
+	int firstBlackIndex = findFirstBlack( src, dst, startIndex, xIni, yIni, vX, vY, selfValue ); 
     if( firstBlackIndex == -1 )
         return E_ALL_WHITE;
 	
     // finds white pixel after the first black pixel
     startIndex = (firstBlackIndex + 1) % 8;
-	int firstWhiteIndex = findFirstWhite( src, startIndex, xIni, yIni, vX, vY, selfValue );   
+	int firstWhiteIndex = findFirstWhite( src, dst, startIndex, xIni, yIni, vX, vY, selfValue );   
     if( firstWhiteIndex == -1 )
         return E_ALL_BLACK;
 
@@ -170,6 +172,7 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
     printf("h %d, w %d, n %d, x %d, y %d\n", height, width, numPixelsString, xD, yD);
     Image8Bits src(srcImgData, width, height);
     ImageRGB dst(dstImgData, width, height);
+	dst.setLum( 0 );
 
     char vX[16], vY[16], vXi[16], vYi[16];
     initDirections(vX, vY, vXi, vYi);
@@ -202,7 +205,7 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
             int firstBlackIndex, lastBlackIndex; 
             // first pixel
             {
-                blackIndex = findWhiteBlackEdge(src, currX, currY, vX, vY, nextStartingIndex, selfValue);
+                blackIndex = findWhiteBlackEdge(src, dst, currX, currY, vX, vY, nextStartingIndex, selfValue);
 				if( blackIndex == E_ALL_BLACK )
                 {
                     dst.setLum(x, y, 255);
@@ -226,7 +229,7 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
             for(int i(0); i < numPixelsString; ++i)
             {
                 // clockwise
-                blackIndex = findWhiteBlackEdge(src, currX, currY, vX, vY, nextStartingIndex, selfValue);
+                blackIndex = findWhiteBlackEdge(src, dst, currX, currY, vX, vY, nextStartingIndex, selfValue);
                 currX += vX[blackIndex];
                 currY += vY[blackIndex];
                 nextStartingIndex = (blackIndex + 4) % 8;
@@ -281,7 +284,7 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
             for(int i(0); i < numPixelsString; ++i)
             {
                 // counter-clockwise
-                blackIndex = findWhiteBlackEdge(src, currX, currY, vXi, vYi, nextStartingIndex, selfValue); 
+                blackIndex = findWhiteBlackEdge(src, dst, currX, currY, vXi, vYi, nextStartingIndex, selfValue); 
                 currX += vXi[blackIndex];
                 currY += vYi[blackIndex];
                 nextStartingIndex = (blackIndex + 4) % 8;

@@ -1,4 +1,5 @@
 #include "ImageRGB.h"
+#include <string.h>
 
 ImageRGB::ImageRGB(uchar *data, int width, int height) :
     _data(data),
@@ -34,6 +35,11 @@ void ImageRGB::setRGB( int i, int j, uchar r, uchar g, uchar b )
 void ImageRGB::setLum( int i, int j, uchar lum )
 {
 	setRGB( i, j, lum, lum, lum );
+}
+
+void ImageRGB::setLum( uchar lum )
+{
+	memset( _data, lum, _width * _height * sizeof(uchar) * 3 );
 }
 
 

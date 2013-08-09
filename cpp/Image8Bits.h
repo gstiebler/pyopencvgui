@@ -10,6 +10,7 @@ public:
     uchar& pix(int i, int j);
     int getWidth();
     int getHeight();
+	void setLum( uchar lum );
     
 protected:
     uchar *_data;

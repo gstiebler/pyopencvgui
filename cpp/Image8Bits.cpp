@@ -1,4 +1,5 @@
 #include "Image8Bits.h"
+#include <string.h>
 
 Image8Bits::Image8Bits(uchar *data, int width, int height) :
     _data(data),
@@ -22,3 +23,7 @@ int Image8Bits::getHeight()
     return _height;
 }
 
+void Image8Bits::setLum( uchar lum )
+{
+	memset( _data, lum, _width * _height * sizeof(uchar) );
+}
