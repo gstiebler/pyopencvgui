@@ -3,9 +3,13 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <math.h>
+#include <vector>
 
 #include "Image8Bits.h"
+#include "ImageRGB.h"
 #include "base.h"
+
+using namespace std;
 
 extern "C" {
   
@@ -130,13 +134,15 @@ double quadrantCorrection( double ang, int x, int y)
 
 __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width, int numPixelsString) 
 {
-    int xD = 167, yD = 48;
+    int xD = 121, yD = 29;
     printf("h %d, w %d, n %d, x %d, y %d\n", height, width, numPixelsString, xD, yD);
     Image8Bits src(srcImgData, width, height);
-    Image8Bits dst(dstImgData, width, height);
+    ImageRGB dst(dstImgData, width, height);
 
     char vX[16], vY[16], vXi[16], vYi[16];
     initDirections(vX, vY, vXi, vYi);
+	vector<Point> firstString, secondString;
+	Point debugFirstBlackPixel(0, 0);
 
     printf("Inicializou direcoes\n");
 
@@ -167,17 +173,20 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
                 blackIndex = findEdge(src, currX, currY, vX, vY, nextIndex, selfValue);
                 if( blackIndex == E_NO_WHITE )
                 {
-                    dst.pix(x, y) = 255;
+                    dst.setLum(x, y, 255);
                     continue;
                 }
                 if( blackIndex == E_ALL_WHITE )
                 {
-                    dst.pix(x, y) = 0;
+                    dst.setLum(x, y, 0);
                     continue;
                 }
                 firstBlackIndex = blackIndex;
             }
 			lastBlackIndex = firstBlackIndex;
+			
+            if( x == xD && y == yD )
+                debugFirstBlackPixel.set( currX + vX[firstBlackIndex], currY + vY[firstBlackIndex] );
 
 			nextIndex = firstBlackIndex;
             bool shouldContinue = false;
@@ -190,16 +199,19 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
                 currY += vY[blackIndex];
                 nextIndex = (blackIndex + 4) % 8;
                 if( x == xD && y == yD )
+				{
+					firstString.push_back(Point( currX, currY ));
                     printf("left i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d\n", i, blackIndex, currX, currY, vX[blackIndex], vY[blackIndex]);
+				}
 
                 sumTurns += lastBlackIndex - blackIndex;
 				// verifies if the pixel turned back to the first pixel
                 if( currX == (x + vX[0]) && currY == (y + vY[0]) && i > 0 )
                 {
                     if( sumTurns > 0 )
-                        dst.pix(x, y) = 0;
+                        dst.setLum(x, y, 0);
                     else
-                        dst.pix(x, y) = 255;
+                        dst.setLum(x, y, 255);
                     shouldContinue = true;
                     break;
                 }
@@ -242,19 +254,24 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
                 if( currX == lastLeftX && currY == lastLeftY )
                 {
                     if( sumTurns < 0 )
-                        dst.pix(x, y) = 0;
+                        dst.setLum(x, y, 0);
                     else
-                        dst.pix(x, y) = 255;
+                        dst.setLum(x, y, 255);
 
                     closed = true;
                     if( x == xD && y == yD )
+					{
                         printf("Right met lastLeft (%d, %d) %d\n", lastLeftX, lastLeftY, sumTurns);
+					}
                     break;
                 }
                 lastBlackIndex = blackIndex;
 
                 if( x == xD && y == yD )
+				{
+					secondString.push_back(Point( currX, currY ));
                     printf("right i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d\n", i, blackIndex, currX, currY, vXi[blackIndex], vYi[blackIndex]);
+				}
             }
             if( closed )
                 continue;
@@ -287,7 +304,7 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 
             double val = (255.0 / 180.0) * dist180;
 
-            dst.pix(x, y) = (uchar) val;
+            dst.setLum(x, y, (uchar) val);
 
             if( x == xD && y == yD )
             {
@@ -299,6 +316,14 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
             }
 	    }
     }
+
+	for( int i(0); i < (int) firstString.size(); ++i)
+		dst.setRGB( firstString[i]._x, firstString[i]._y, 0xFF, 0, 0 );
+
+	for( int i(0); i < (int) secondString.size(); ++i)
+		dst.setRGB( secondString[i]._x, secondString[i]._y, 0, 0xFF, 0 );
+
+	dst.setRGB( debugFirstBlackPixel._x, debugFirstBlackPixel._y, 0, 0, 0xFF );
   
 }
 

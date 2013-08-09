@@ -31,6 +31,11 @@ void ImageRGB::setRGB( int i, int j, uchar r, uchar g, uchar b )
 	*p = b;
 }
 
+void ImageRGB::setLum( int i, int j, uchar lum )
+{
+	setRGB( i, j, lum, lum, lum );
+}
+
 
 
 void ImageRGB::setR( int i, int j, uchar r )
@@ -63,3 +68,13 @@ uchar ImageRGB::getB( int i, int j )
 {
 	return _data[getOffset( i, j ) + 2];
 }
+
+uchar ImageRGB::getLum( int i, int j )
+{
+	uchar *p = &_data[getOffset( i, j )];
+	uchar r = *p++;
+	uchar g = *p++;
+	uchar b = *p;
+	return r * 0.11 + g * 0.59 + b * 0.3;
+}
+

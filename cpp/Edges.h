@@ -6,12 +6,6 @@
 #include "ImageRGB.h"
 #include <vector>
 
-struct Point
-{
-	Point( int x, int y );
-	int _x, _y;
-};
-
 extern "C" {
 	
 __declspec(dllexport) void __stdcall hEdges(uchar *srcImgData, uchar *dstImgData, int height, int width, int thresh, int delta);

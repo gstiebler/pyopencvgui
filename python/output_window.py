@@ -19,7 +19,7 @@ class OutputWindow:
     def on_spin_changed(self, widget, data):
         x = self.xSpin.get_value()
         y = self.ySpin.get_value()
-        self.output_presenter.mouse_moved( x, y )
+        self.output_presenter.spin_changed( x, y )
         
     def set_info_label( self, label ):
         self.infoLabel.set_label( label )

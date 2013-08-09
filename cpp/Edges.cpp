@@ -4,12 +4,6 @@
 
 using namespace std;
 
-Point::Point( int x, int y )
-{
-	_x = x;
-	_y = y;
-}
-
 __declspec(dllexport) void __stdcall hEdges(uchar *srcImgData, uchar *dstImgData, int height, int width, int thresh, int delta)
 {
 	Image8Bits src(srcImgData, width, height);

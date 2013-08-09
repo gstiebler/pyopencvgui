@@ -15,7 +15,7 @@
     <function name="seismicProcess">
 		<srcLib>mylib</srcLib>
         <sourceDataType>8bits</sourceDataType>
-        <destDataType>8bits</destDataType>
+        <destDataType>RGB</destDataType>
         <hasStats>no</hasStats>
 		<params>
 			<param name="numPixelsString" type="int">

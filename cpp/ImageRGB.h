@@ -15,10 +15,12 @@ public:
     void setR( int i, int j, uchar r );
     void setG( int i, int j, uchar g );
     void setB( int i, int j, uchar b );
+	void setLum( int i, int j, uchar lum );
 
     uchar getR( int i, int j );
     uchar getG( int i, int j );
     uchar getB( int i, int j );
+	uchar getLum( int i, int j );
     
 protected:
     uchar *_data;
