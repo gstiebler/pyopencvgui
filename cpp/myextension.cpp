@@ -62,13 +62,12 @@ void initDirections(char *vX, char *vY, char *vXi, char *vYi)
 }
 
 
-enum FE_RESPONSE { E_NO_WHITE = -1, E_ALL_WHITE = -2 };
+enum FE_RESPONSE { E_ALL_BLACK = -1, E_ALL_WHITE = -2 };
 
 int findFirstWhite( Image8Bits &src, int startIndex, int xIni, int yIni, char vX[16], char vY[16], uchar selfValue )
 {    
 	int deltaX, deltaY;
     int xIndex, yIndex;
-    int whiteIndex = -1;
 	for(int i(startIndex); i < ( startIndex + 8 ); ++i)
     {
 		deltaX = vX[i];
@@ -79,14 +78,10 @@ int findFirstWhite( Image8Bits &src, int startIndex, int xIni, int yIni, char vX
             break;
 
         uchar currValue = src.pix( xIndex, yIndex );
-
         if(currValue > selfValue)
-        {
-            whiteIndex = i % 8;
-            break;
-        }
+            return i % 8;
     }    
-	return whiteIndex;
+	return -1;
 }
 
 
@@ -95,7 +90,6 @@ int findFirstBlack( Image8Bits &src, int startIndex, int xIni, int yIni, char vX
 {
 	int deltaX, deltaY;
     int xIndex, yIndex;
-    int whiteIndex = -1;
 	for(int i(startIndex); i < ( startIndex + 8 ); ++i)
     {
 		deltaX = vX[i];
@@ -110,25 +104,41 @@ int findFirstBlack( Image8Bits &src, int startIndex, int xIni, int yIni, char vX
             return i % 8;
     }
 
-    return E_ALL_WHITE;
+    return -1;
 }
 
 
 
 int findWhiteBlackEdge(Image8Bits &src, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex, uchar selfValue)
 {
-    // finds white pixel
-    int firstWhiteIndex;
-    int xIndex, yIndex;
-	int deltaX, deltaY;
-
-	firstWhiteIndex = findFirstWhite( src, startIndex, xIni, yIni, vX, vY, selfValue );   
+	int firstWhiteIndex = findFirstWhite( src, startIndex, xIni, yIni, vX, vY, selfValue );   
     if( firstWhiteIndex == -1 )
-        return E_NO_WHITE;
+        return E_ALL_BLACK;
 
     // finds black pixel after the first white pixel
     startIndex = (firstWhiteIndex + 1) % 8;
-	return findFirstBlack( src, startIndex, xIni, yIni, vX, vY, selfValue ); 
+	int firstBlackIndex = findFirstBlack( src, startIndex, xIni, yIni, vX, vY, selfValue ); 
+    if( firstBlackIndex == -1 )
+        return E_ALL_WHITE;
+
+	return firstBlackIndex;
+}
+
+
+
+int findBlackWhiteEdge(Image8Bits &src, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex, uchar selfValue)
+{
+	int firstBlackIndex = findFirstBlack( src, startIndex, xIni, yIni, vX, vY, selfValue ); 
+    if( firstBlackIndex == -1 )
+        return E_ALL_WHITE;
+	
+    // finds white pixel after the first black pixel
+    startIndex = (firstBlackIndex + 1) % 8;
+	int firstWhiteIndex = findFirstWhite( src, startIndex, xIni, yIni, vX, vY, selfValue );   
+    if( firstWhiteIndex == -1 )
+        return E_ALL_BLACK;
+
+	return firstWhiteIndex;
 }
 
 
@@ -156,7 +166,7 @@ double quadrantCorrection( double ang, int x, int y)
 
 __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width, int numPixelsString) 
 {
-    int xD = 121, yD = 29;
+    int xD = 70, yD = 81;
     printf("h %d, w %d, n %d, x %d, y %d\n", height, width, numPixelsString, xD, yD);
     Image8Bits src(srcImgData, width, height);
     ImageRGB dst(dstImgData, width, height);
@@ -193,7 +203,7 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
             // first pixel
             {
                 blackIndex = findWhiteBlackEdge(src, currX, currY, vX, vY, nextStartingIndex, selfValue);
-                if( blackIndex == E_NO_WHITE )
+				if( blackIndex == E_ALL_BLACK )
                 {
                     dst.setLum(x, y, 255);
                     continue;
@@ -250,20 +260,24 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 
 
             //nextStartingIndex = firstBlackIndex;
-			nextStartingIndex = 0;
+			//nextStartingIndex = 0;
 			// inverting
-			nextStartingIndex = 8 - firstBlackIndex;
-			nextStartingIndex += 8;
-			nextStartingIndex %= 8;
+			//nextStartingIndex = firstBlackIndex;
+			//nextStartingIndex += 8;
+			//nextStartingIndex %= 8;
             currX = x;
             currY = y;
             bool closed = false;
             sumTurns = 0;
             
             // first pixel
-            {
-                lastBlackIndex = findWhiteBlackEdge(src, currX, currY, vX, vY, nextStartingIndex, selfValue);
-            }
+            //{
+            //   lastBlackIndex = findBlackWhiteEdge(src, currX, currY, vX, vY, nextStartingIndex, selfValue);
+            //}
+			// calculate the index to the counter-clockwise loop
+			nextStartingIndex = 8 - firstBlackIndex;
+			nextStartingIndex -= 1;
+			nextStartingIndex = (nextStartingIndex + 8) % 8;
             for(int i(0); i < numPixelsString; ++i)
             {
                 // counter-clockwise
