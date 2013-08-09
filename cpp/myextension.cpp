@@ -170,9 +170,8 @@ double quadrantCorrection( double ang, int x, int y)
 } 
  
 
-__declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width, int numPixelsString) 
+__declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width, int numPixelsString, int xD, int yD) 
 {
-    int xD = 85, yD = 24;
     printf("h %d, w %d, n %d, x %d, y %d\n", height, width, numPixelsString, xD, yD);
     Image8Bits src(srcImgData, width, height);
     ImageRGB dst(dstImgData, width, height);
@@ -212,12 +211,12 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
                 blackIndex = findWhiteBlackEdge(src, dst, currX, currY, vX, vY, nextStartingIndex, selfValue);
 				if( blackIndex == E_ALL_BLACK )
                 {
-                    dst.setLum(x, y, 255);
+                    dst.setRGB(x, y, 0x70, 0x0, 0x0);
                     continue;
                 }
                 if( blackIndex == E_ALL_WHITE )
                 {
-                    dst.setLum(x, y, 0);
+                    dst.setRGB(x, y, 0x70, 0x0, 0x70);
                     continue;
                 }
                 firstBlackIndex = blackIndex;
@@ -245,12 +244,12 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 
                 sumTurns += normalize(lastBlackIndex - blackIndex - 4);
 				// verifies if the pixel turned back to the first pixel
-                if( currX == (x + vX[0]) && currY == (y + vY[0]) && i > 0 )
+                if( currX == x && currY == y && i > 0 )
                 {
                     if( sumTurns > 0xFF )
-                        dst.setLum(x, y, 0);
+                        dst.setRGB(x, y, 0xA0, 0xA0, 0xFF);
                     else
-                        dst.setLum(x, y, 0);
+                        dst.setRGB(x, y, 0x0, 0x0, 0x70);
                     shouldContinue = true;
                     break;
                 }
@@ -265,23 +264,11 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
             if( shouldContinue )
                 continue;
 
-
-            //nextStartingIndex = firstBlackIndex;
-			//nextStartingIndex = 0;
-			// inverting
-			//nextStartingIndex = firstBlackIndex;
-			//nextStartingIndex += 8;
-			//nextStartingIndex %= 8;
             currX = x;
             currY = y;
             bool closed = false;
             sumTurns = 0;
-            
-            // first pixel
-            //{
-            //   lastBlackIndex = findBlackWhiteEdge(src, currX, currY, vX, vY, nextStartingIndex, selfValue);
-            //}
-			// calculate the index to the counter-clockwise loop
+
 			nextStartingIndex = 8 - firstBlackIndex;
 			nextStartingIndex -= 1;
 			nextStartingIndex = normalize(nextStartingIndex);
@@ -298,9 +285,9 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
                 if( currX == lastLeftX && currY == lastLeftY )
                 {
                     if( sumTurns < 0 )
-                        dst.setLum(x, y, 0);
+                        dst.setRGB(x, y, 0x0, 0x70, 0x0);
                     else
-                        dst.setLum(x, y, 255);
+                        dst.setRGB(x, y, 0xA0, 0xFF, 0xA0);
 
                     closed = true;
                     if( x == xD && y == yD )
@@ -344,7 +331,9 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 			if(difAng < 0.0)
 				difAng += 360.0;
 
-			double dist180 = fabs( 180.0 - difAng );
+			double dist180 = 180.0 - difAng;
+			if(dist180 < 0.0)
+				dist180 = 0.0;
 
             double val = (255.0 / 180.0) * dist180;
 

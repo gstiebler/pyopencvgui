@@ -56,10 +56,10 @@ class FuncWindow:
         return params  
 
     def hscale_callback(self, adjustment, data=None):
-        self._func_presenter.execution_needed()
+        self._func_presenter.params_changed()
         
     def combobox_callback(self, combobox, user_data):
-        self._func_presenter.execution_needed()
+        self._func_presenter.params_changed()
        
     def execute_button_callback(self, widget, data=None):
         self._func_presenter.execution_needed()

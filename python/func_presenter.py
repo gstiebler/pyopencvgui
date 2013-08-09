@@ -25,6 +25,7 @@ class FuncPresenter:
         self.srcDataType = get_xml_text(function_xml.getElementsByTagName("sourceDataType"))
         self.destDataType = get_xml_text(function_xml.getElementsByTagName("destDataType"))
         self.hasStats = get_xml_text(function_xml.getElementsByTagName("hasStats")) 
+        self.autoUpdate = get_xml_text(function_xml.getElementsByTagName("autoUpdate")) 
         self.numIntStats = get_xml_text(function_xml.getElementsByTagName("numIntStats")) 
         self.numDoubleStats = get_xml_text(function_xml.getElementsByTagName("numDoubleStats")) 
         self._func_window.set_title(self.func_str)
@@ -33,6 +34,13 @@ class FuncPresenter:
         for param in params:
             self.process_param(param)
             
+    def params_changed( self ):
+        if self.autoUpdate != "yes":
+            return
+            
+        dest_image = self.execute( self._output_presenter.get_src_image() )['dest_image']
+        self._output_presenter.setCurrentImage(dest_image)
+    
     def execution_needed( self ):
         dest_image = self.execute( self._output_presenter.get_src_image() )['dest_image']
         self._output_presenter.setCurrentImage(dest_image)

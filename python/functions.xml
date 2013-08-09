@@ -4,6 +4,7 @@
         <sourceDataType>8bits</sourceDataType>
         <destDataType>8bits</destDataType>
         <hasStats>no</hasStats>
+	    <autoUpdate>yes</autoUpdate>
 		<params>
 			<param name="thresh" type="int">
 				<value>15</value>
@@ -22,6 +23,16 @@
 				<value>15</value>
 				<lower>0</lower>
 				<upper>50</upper>
+			</param>
+			<param name="xDebug" type="int">
+				<value>15</value>
+				<lower>0</lower>
+				<upper>1000</upper>
+			</param>
+			<param name="yDebug" type="int">
+				<value>15</value>
+				<lower>0</lower>
+				<upper>1000</upper>
 			</param>
 		</params>
     </function>
@@ -48,6 +59,7 @@
         <sourceDataType>8bits</sourceDataType>
         <destDataType>RGB</destDataType>
         <hasStats>no</hasStats>
+	    <autoUpdate>yes</autoUpdate>
 		<params>
 			<param name="Threshold" type="int">
 				<value>10</value>
@@ -68,6 +80,7 @@
         <hasStats>yes</hasStats>
        <numIntStats>2</numIntStats>
        <numDoubleStats>8</numDoubleStats>
+	    <autoUpdate>yes</autoUpdate>
 		<params>
 			<param name="Threshold" type="int">
 				<value>10</value>
