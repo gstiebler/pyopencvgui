@@ -64,13 +64,12 @@ void initDirections(char *vX, char *vY, char *vXi, char *vYi)
 
 enum FE_RESPONSE { E_NO_WHITE = -1, E_ALL_WHITE = -2 };
 
-int findEdge(Image8Bits &src, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex, uchar selfValue)
-{
-    // finds white pixel
-    int whiteIndex = -1;
-    int xIndex, yIndex;
+int findFirstWhite( Image8Bits &src, int startIndex, int xIni, int yIni, char vX[16], char vY[16], uchar selfValue )
+{    
 	int deltaX, deltaY;
-    for(int i(startIndex); i < ( startIndex + 8 ); ++i)
+    int xIndex, yIndex;
+    int whiteIndex = -1;
+	for(int i(startIndex); i < ( startIndex + 8 ); ++i)
     {
 		deltaX = vX[i];
 		deltaY = vY[i];
@@ -87,12 +86,17 @@ int findEdge(Image8Bits &src, int xIni, int yIni, char vX[16], char vY[16], ucha
             break;
         }
     }    
-    if( whiteIndex == -1 )
-        return E_NO_WHITE;
+	return whiteIndex;
+}
 
-    // finds black pixel
-    startIndex = (whiteIndex + 1) % 8;
-    for(int i(startIndex); i < ( startIndex + 8 ); ++i)
+
+
+int findFirstBlack( Image8Bits &src, int startIndex, int xIni, int yIni, char vX[16], char vY[16], uchar selfValue )
+{
+	int deltaX, deltaY;
+    int xIndex, yIndex;
+    int whiteIndex = -1;
+	for(int i(startIndex); i < ( startIndex + 8 ); ++i)
     {
 		deltaX = vX[i];
 		deltaY = vY[i];
@@ -107,6 +111,24 @@ int findEdge(Image8Bits &src, int xIni, int yIni, char vX[16], char vY[16], ucha
     }
 
     return E_ALL_WHITE;
+}
+
+
+
+int findWhiteBlackEdge(Image8Bits &src, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex, uchar selfValue)
+{
+    // finds white pixel
+    int firstWhiteIndex;
+    int xIndex, yIndex;
+	int deltaX, deltaY;
+
+	firstWhiteIndex = findFirstWhite( src, startIndex, xIni, yIni, vX, vY, selfValue );   
+    if( firstWhiteIndex == -1 )
+        return E_NO_WHITE;
+
+    // finds black pixel after the first white pixel
+    startIndex = (firstWhiteIndex + 1) % 8;
+	return findFirstBlack( src, startIndex, xIni, yIni, vX, vY, selfValue ); 
 }
 
 
@@ -146,7 +168,7 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 
     printf("Inicializou direcoes\n");
 
-    int nextIndex, blackIndex;
+    int nextStartingIndex, blackIndex;
     int currX, currY;
     int lastLeftX, lastLeftY, lastRightX, lastRightY;
     int difXright, difYright, difXleft, difYleft;
@@ -163,14 +185,14 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
             if( x == xD && y == yD )
                 printf("Debug (%d, %d) \n", x, y);
             uchar selfValue = src.pix(x, y);
-            nextIndex = 0;
+            nextStartingIndex = 0;
             currX = x;
             currY = y;
 
             int firstBlackIndex, lastBlackIndex; 
             // first pixel
             {
-                blackIndex = findEdge(src, currX, currY, vX, vY, nextIndex, selfValue);
+                blackIndex = findWhiteBlackEdge(src, currX, currY, vX, vY, nextStartingIndex, selfValue);
                 if( blackIndex == E_NO_WHITE )
                 {
                     dst.setLum(x, y, 255);
@@ -188,16 +210,16 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
             if( x == xD && y == yD )
                 debugFirstBlackPixel.set( currX + vX[firstBlackIndex], currY + vY[firstBlackIndex] );
 
-			nextIndex = firstBlackIndex;
+			//nextStartingIndex = firstBlackIndex;
             bool shouldContinue = false;
             int sumTurns = 0;
             for(int i(0); i < numPixelsString; ++i)
             {
                 // clockwise
-                blackIndex = findEdge(src, currX, currY, vX, vY, nextIndex, selfValue);
+                blackIndex = findWhiteBlackEdge(src, currX, currY, vX, vY, nextStartingIndex, selfValue);
                 currX += vX[blackIndex];
                 currY += vY[blackIndex];
-                nextIndex = (blackIndex + 4) % 8;
+                nextStartingIndex = (blackIndex + 4) % 8;
                 if( x == xD && y == yD )
 				{
 					firstString.push_back(Point( currX, currY ));
@@ -227,11 +249,12 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
                 continue;
 
 
-            nextIndex = firstBlackIndex;
+            //nextStartingIndex = firstBlackIndex;
+			nextStartingIndex = 0;
 			// inverting
-			nextIndex = 8 - firstBlackIndex;
-			nextIndex += 8;
-			nextIndex %= 8;
+			nextStartingIndex = 8 - firstBlackIndex;
+			nextStartingIndex += 8;
+			nextStartingIndex %= 8;
             currX = x;
             currY = y;
             bool closed = false;
@@ -239,15 +262,15 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
             
             // first pixel
             {
-                lastBlackIndex = findEdge(src, currX, currY, vX, vY, nextIndex, selfValue);
+                lastBlackIndex = findWhiteBlackEdge(src, currX, currY, vX, vY, nextStartingIndex, selfValue);
             }
             for(int i(0); i < numPixelsString; ++i)
             {
                 // counter-clockwise
-                blackIndex = findEdge(src, currX, currY, vXi, vYi, nextIndex, selfValue); 
+                blackIndex = findWhiteBlackEdge(src, currX, currY, vXi, vYi, nextStartingIndex, selfValue); 
                 currX += vXi[blackIndex];
                 currY += vYi[blackIndex];
-                nextIndex = (blackIndex + 4) % 8;
+                nextStartingIndex = (blackIndex + 4) % 8;
                 
                 sumTurns += lastBlackIndex - blackIndex;
 				// verifies if the pixel turned back to the first pixel
