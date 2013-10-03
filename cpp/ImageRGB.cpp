@@ -1,6 +1,10 @@
 #include "ImageRGB.h"
 #include <string.h>
 
+Cor::Cor( uchar r_, uchar g_, uchar b_ ) : r(r_), g(g_), b(b_)
+{
+}
+
 ImageRGB::ImageRGB(uchar *data, int width, int height) :
     _data(data),
     _width(width),
@@ -30,6 +34,11 @@ void ImageRGB::setRGB( int i, int j, uchar r, uchar g, uchar b )
 	*p++ = r;
 	*p++ = g;
 	*p = b;
+}
+
+void ImageRGB::setRGB( int i, int j, const Cor &cor )
+{
+	setRGB( i, j, cor.r, cor.g, cor.b );
 }
 
 void ImageRGB::setLum( int i, int j, uchar lum )

@@ -4,6 +4,13 @@
 
 typedef unsigned char uchar;
 
+struct Cor
+{
+	uchar r, g, b;
+
+	Cor( uchar r_, uchar g_, uchar b_);
+};
+
 class ImageRGB
 {
 public:
@@ -12,6 +19,7 @@ public:
     int getHeight();
 
     void setRGB( int i, int j, uchar r, uchar g, uchar b );
+	void setRGB( int i, int j, const Cor &cor );
     void setR( int i, int j, uchar r );
     void setG( int i, int j, uchar g );
     void setB( int i, int j, uchar b );

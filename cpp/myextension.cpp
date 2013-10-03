@@ -191,6 +191,17 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
     
     double tan1, tan2, ang1, ang2;
     double conv = 180.0 / 3.1416;
+
+	Cor violeta(0x70, 0x0, 0x70);
+	Cor vermelho(0x70, 0x0, 0x0);
+	Cor azul( 0x0, 0x0, 0x70 );
+	Cor azulClaro( 0xA0, 0xA0, 0xFF);
+	Cor verdeClaro( 0xA0, 0xFF, 0xA0 );
+	Cor verdeEscuro( 0x0, 0x70, 0x0 );
+	Cor azulMax( 0x0, 0x0, 0xFF );
+	Cor verdeMax( 0x0, 0xFF, 0x0 );
+	Cor vermelhoMax( 0xFF, 0x0, 0x0 );
+	Cor amarelo( 0xFF, 0xFF, 0 );
     
     printf("Dims %d, %d\n", src.getHeight(), src.getWidth());
 
@@ -211,12 +222,12 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
                 blackIndex = findWhiteBlackEdge(src, dst, currX, currY, vX, vY, nextStartingIndex, selfValue);
 				if( blackIndex == E_ALL_BLACK )
                 {
-                    dst.setRGB(x, y, 0x70, 0x0, 0x0);
+                    dst.setRGB(x, y, vermelho);
                     continue;
                 }
                 if( blackIndex == E_ALL_WHITE )
                 {
-                    dst.setRGB(x, y, 0x70, 0x0, 0x70);
+                    dst.setRGB(x, y, violeta);
                     continue;
                 }
                 firstBlackIndex = blackIndex;
@@ -246,10 +257,10 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 				// verifies if the pixel turned back to the first pixel
                 if( currX == x && currY == y && i > 0 )
                 {
-                    if( sumTurns > 0xFF )
-                        dst.setRGB(x, y, 0xA0, 0xA0, 0xFF);
+                    if( sumTurns > 0 )
+                        dst.setRGB(x, y, azulClaro);
                     else
-                        dst.setRGB(x, y, 0x0, 0x0, 0x70);
+                        dst.setRGB(x, y, azul);
                     shouldContinue = true;
                     break;
                 }
@@ -285,9 +296,9 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
                 if( currX == lastLeftX && currY == lastLeftY )
                 {
                     if( sumTurns < 0 )
-                        dst.setRGB(x, y, 0x0, 0x70, 0x0);
+                        dst.setRGB(x, y, verdeEscuro);
                     else
-                        dst.setRGB(x, y, 0xA0, 0xFF, 0xA0);
+                        dst.setRGB(x, y, verdeClaro);
 
                     closed = true;
                     if( x == xD && y == yD )
@@ -351,13 +362,13 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
     }
 
 	for( int i(0); i < (int) firstString.size(); ++i)
-		dst.setRGB( firstString[i]._x, firstString[i]._y, 0xFF, 0, 0 );
+		dst.setRGB( firstString[i]._x, firstString[i]._y, vermelhoMax );
 
 	for( int i(0); i < (int) secondString.size(); ++i)
-		dst.setRGB( secondString[i]._x, secondString[i]._y, 0, 0xFF, 0 );
+		dst.setRGB( secondString[i]._x, secondString[i]._y, verdeMax );
 
-	dst.setRGB( debugFirstBlackPixel._x, debugFirstBlackPixel._y, 0, 0, 0xFF );
-	dst.setRGB( xD, yD, 0xFF, 0xFF, 0 );
+	dst.setRGB( debugFirstBlackPixel._x, debugFirstBlackPixel._y, azulMax );
+	dst.setRGB( xD, yD, amarelo );
   
 }
 
