@@ -2,13 +2,13 @@ import cv2
 import numpy as np
 
 import type_conversion
+import horizontal_lines
 
-width = 100
+width = 200
 height = 100
-initial_img = np.zeros(shape=(width,height), dtype=np.float32)
+initial_img = np.zeros(shape=(height,width), dtype=np.float32)
 
-for i in range(width):
-    initial_img[i][i] = 1.0;
+horizontal_lines.generate_horizontal_lines(initial_img)
     
 converted_img = type_conversion.float2uint8(initial_img)
 
