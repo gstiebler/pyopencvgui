@@ -283,6 +283,16 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 						shouldContinue = true;
 						break;
 					}
+					else if( blackIndex == E_ALL_BLACK )
+					{
+						#ifdef DEBUG_COLORS
+							dst.setRGB(x, y, vermelho);
+						#else
+							dst.setRGB(x, y, branco);
+						#endif
+						shouldContinue = true;
+						break;
+					}
 
 					currX += vX[blackIndex];
 					currY += vY[blackIndex];
@@ -353,6 +363,16 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 							dst.setRGB(x, y, violeta);
 						#else
 							dst.setRGB(x, y, preto);
+						#endif
+						shouldContinue = true;
+						break;
+					}
+					else if( blackIndex == E_ALL_BLACK )
+					{
+						#ifdef DEBUG_COLORS
+							dst.setRGB(x, y, vermelho);
+						#else
+							dst.setRGB(x, y, branco);
 						#endif
 						shouldContinue = true;
 						break;
