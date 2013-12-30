@@ -25,12 +25,12 @@
 				<upper>50</upper>
 			</param>
 			<param name="xDebug" type="int">
-				<value>15</value>
+				<value>49</value>
 				<lower>0</lower>
 				<upper>1000</upper>
 			</param>
 			<param name="yDebug" type="int">
-				<value>15</value>
+				<value>27</value>
 				<lower>0</lower>
 				<upper>1000</upper>
 			</param>

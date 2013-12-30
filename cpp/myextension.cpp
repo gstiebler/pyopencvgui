@@ -14,7 +14,7 @@ using namespace std;
 
 #define DST_THRESH 128
 
-#define DEBUG_COLORS
+//#define DEBUG_COLORS
 
 extern "C" {
   
@@ -215,6 +215,8 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 	Cor verdeMax( 0x0, 0xFF, 0x0 ); // segunda trilha
 	Cor vermelhoMax( 0xFF, 0x0, 0x0 ); // primeira trilha
 	Cor amarelo( 0xFF, 0xFF, 0 ); // X e Y selecionado de debug
+	Cor branco( 0xFF, 0xFF, 0xFF );
+	Cor preto( 0x0, 0x0, 0x0 );
     
     printf("Dims %d, %d\n", src.getHeight(), src.getWidth());
 
@@ -243,6 +245,8 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 					{
 						#ifdef DEBUG_COLORS
 							dst.setRGB(x, y, vermelho);
+						#else
+							dst.setRGB(x, y, branco);
 						#endif
 						continue;
 					}
@@ -250,6 +254,8 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 					{
 						#ifdef DEBUG_COLORS
 							dst.setRGB(x, y, violeta);
+						#else
+							dst.setRGB(x, y, preto);
 						#endif
 						continue;
 					}
@@ -266,6 +272,18 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 				{
 					// clockwise
 					blackIndex = findWhiteBlackEdge(src, dst, currX, currY, vX, vY, nextStartingIndex, usedPoints, selfValue);
+					
+					if( blackIndex == E_ALL_WHITE )
+					{
+						#ifdef DEBUG_COLORS
+							dst.setRGB(x, y, violeta);
+						#else
+							dst.setRGB(x, y, preto);
+						#endif
+						shouldContinue = true;
+						break;
+					}
+
 					currX += vX[blackIndex];
 					currY += vY[blackIndex];
 					nextStartingIndex = normalize(blackIndex + 4);
@@ -282,12 +300,22 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 					// verifies if the pixel turned back to the first pixel
 					if( currX == x && currY == y && i > 0 )
 					{
-						#ifdef DEBUG_COLORS
-							if( sumTurns > 0 )
+						if( sumTurns > 0 )
+						{
+							#ifdef DEBUG_COLORS
 								dst.setRGB(x, y, azulClaro);
-							else
+							#else
+								dst.setRGB(x, y, preto);
+							#endif
+						}
+						else
+						{
+							#ifdef DEBUG_COLORS
 								dst.setRGB(x, y, azul);
-						#endif
+							#else
+								dst.setRGB(x, y, branco);
+							#endif
+						}
 						shouldContinue = true;
 						break;
 					}
@@ -318,7 +346,18 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 				for(int i(0); i < numPixelsString; ++i)
 				{
 					// counter-clockwise
-					blackIndex = findWhiteBlackEdge(src, dst, currX, currY, vXi, vYi, nextStartingIndex, usedPoints, selfValue); 
+					blackIndex = findWhiteBlackEdge(src, dst, currX, currY, vXi, vYi, nextStartingIndex, usedPoints, selfValue);
+					if( blackIndex == E_ALL_WHITE )
+					{
+						#ifdef DEBUG_COLORS
+							dst.setRGB(x, y, violeta);
+						#else
+							dst.setRGB(x, y, preto);
+						#endif
+						shouldContinue = true;
+						break;
+					}
+
 					currX += vXi[blackIndex];
 					currY += vYi[blackIndex];
 					nextStartingIndex = normalize(blackIndex + 4);
@@ -330,12 +369,22 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 					// verifies if the pixel turned back to the first pixel
 					if( currX == lastLeftX && currY == lastLeftY )
 					{
-						#ifdef DEBUG_COLORS
-							if( sumTurns < 0 )
+						if( sumTurns < 0 )
+						{
+							#ifdef DEBUG_COLORS
 								dst.setRGB(x, y, verdeEscuro);
-							else
+							#else
+								dst.setRGB(x, y, branco);
+							#endif
+						}
+						else
+						{
+							#ifdef DEBUG_COLORS
 								dst.setRGB(x, y, verdeClaro);
-						#endif
+							#else
+								dst.setRGB(x, y, preto);
+							#endif
+						}
 
 						closed = true;
 						if( x == xD && y == yD )
@@ -353,6 +402,9 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 					}
 				}
 				if( closed )
+					continue;
+
+				if( shouldContinue )
 					continue;
 			}
 
