@@ -4,7 +4,7 @@ import diagonal_lines
 import horizontal_lines
 import image_operations
 
-def generate(width, height, hor_lines=5, diag_lines=3):
+def generate(width, height, hor_lines=5, diag_lines=2):
 
     horizontal_lines_img = np.zeros(shape=(height,width), dtype=np.float32)  
     diagonal_lines_img = np.zeros(shape=(height,width), dtype=np.float32)

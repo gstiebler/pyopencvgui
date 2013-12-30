@@ -13,6 +13,17 @@ struct Point
 		_x = x;
 		_y = y;
 	}
+
+	bool operator<(Point other) const
+    {
+		if(_x < other._x)
+			return true;
+		else if (_x > other._x)
+			return false;
+
+        return _y < other._y;
+    }
+
 };
 
 

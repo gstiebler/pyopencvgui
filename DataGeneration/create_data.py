@@ -2,12 +2,14 @@ import cv2
 import numpy as np
 
 import type_conversion
-import crossing_lines
+import horizontal_lines
 
-width = 150
+width = 100
 height = 50
 
-initial_img = crossing_lines.generate(width, height)
+initial_img = np.zeros(shape=(height,width), dtype=np.float32)
+
+horizontal_lines.generate(initial_img)
     
 converted_img = type_conversion.float2uint8(initial_img)
 

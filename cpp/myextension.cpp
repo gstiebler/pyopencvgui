@@ -4,6 +4,7 @@
 #include <memory.h>
 #include <math.h>
 #include <vector>
+#include <set>
 
 #include "Image8Bits.h"
 #include "ImageRGB.h"
@@ -12,6 +13,8 @@
 using namespace std;
 
 #define DST_THRESH 128
+
+#define DEBUG_COLORS
 
 extern "C" {
   
@@ -70,7 +73,7 @@ int normalize( int value )
 
 enum FE_RESPONSE { E_ALL_BLACK = -1, E_ALL_WHITE = -2 };
 
-int findFirstWhite( Image8Bits &src, ImageRGB &dst, int startIndex, int xIni, int yIni, char vX[16], char vY[16], uchar selfValue )
+int findFirstWhite( Image8Bits &src, ImageRGB &dst, int startIndex, int xIni, int yIni, char vX[16], char vY[16], set<Point> &usedPoints, uchar selfValue )
 {    
 	int deltaX, deltaY;
     int xIndex, yIndex;
@@ -80,11 +83,16 @@ int findFirstWhite( Image8Bits &src, ImageRGB &dst, int startIndex, int xIni, in
 		deltaY = vY[i];
         xIndex = xIni + deltaX;
         yIndex = yIni + deltaY;
+
+		Point p(xIndex, yIndex);
+		if( usedPoints.find( p ) != usedPoints.end() )
+			continue;
+
         if( xIndex == 0 || yIndex == 0 || xIndex == src.getWidth() || yIndex == src.getHeight() )
             break;
 
         uchar currValue = src.pix( xIndex, yIndex );
-		if(currValue > selfValue || dst.getLum( xIndex, yIndex ) > DST_THRESH )
+		if(currValue > selfValue /* || dst.getLum( xIndex, yIndex ) > DST_THRESH */ )
             return normalize(i);
     }    
 	return -1;
@@ -92,7 +100,7 @@ int findFirstWhite( Image8Bits &src, ImageRGB &dst, int startIndex, int xIni, in
 
 
 
-int findFirstBlack( Image8Bits &src, ImageRGB &dst, int startIndex, int xIni, int yIni, char vX[16], char vY[16], uchar selfValue )
+int findFirstBlack( Image8Bits &src, ImageRGB &dst, int startIndex, int xIni, int yIni, char vX[16], char vY[16], set<Point> &usedPoints, uchar selfValue )
 {
 	int deltaX, deltaY;
     int xIndex, yIndex;
@@ -102,11 +110,16 @@ int findFirstBlack( Image8Bits &src, ImageRGB &dst, int startIndex, int xIni, in
 		deltaY = vY[i];
         xIndex = xIni + deltaX;
         yIndex = yIni + deltaY;
+
+		Point p(xIndex, yIndex);
+		if( usedPoints.find( p ) != usedPoints.end() )
+			continue;
+
         if( xIndex == 0 || yIndex == 0 || xIndex == src.getWidth() || yIndex == src.getHeight() )
             break;
 
         uchar currValue = src.pix(xIndex, yIndex);
-        if(currValue <= selfValue && dst.getLum( xIndex, yIndex ) < DST_THRESH )
+        if(currValue <= selfValue /* && dst.getLum( xIndex, yIndex ) < DST_THRESH */ )
             return normalize(i);
     }
 
@@ -115,15 +128,15 @@ int findFirstBlack( Image8Bits &src, ImageRGB &dst, int startIndex, int xIni, in
 
 
 
-int findWhiteBlackEdge(Image8Bits &src, ImageRGB &dst, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex, uchar selfValue)
+int findWhiteBlackEdge(Image8Bits &src, ImageRGB &dst, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex, set<Point> &usedPoints, uchar selfValue)
 {
-	int firstWhiteIndex = findFirstWhite( src, dst, startIndex, xIni, yIni, vX, vY, selfValue );   
+	int firstWhiteIndex = findFirstWhite( src, dst, startIndex, xIni, yIni, vX, vY, usedPoints, selfValue );   
     if( firstWhiteIndex == -1 )
         return E_ALL_BLACK;
 
     // finds black pixel after the first white pixel
     startIndex = normalize(firstWhiteIndex + 1);
-	int firstBlackIndex = findFirstBlack( src, dst, startIndex, xIni, yIni, vX, vY, selfValue ); 
+	int firstBlackIndex = findFirstBlack( src, dst, startIndex, xIni, yIni, vX, vY, usedPoints, selfValue ); 
     if( firstBlackIndex == -1 )
         return E_ALL_WHITE;
 
@@ -132,15 +145,15 @@ int findWhiteBlackEdge(Image8Bits &src, ImageRGB &dst, int xIni, int yIni, char 
 
 
 
-int findBlackWhiteEdge(Image8Bits &src, ImageRGB &dst, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex, uchar selfValue)
+int findBlackWhiteEdge(Image8Bits &src, ImageRGB &dst, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex, set<Point> &usedPoints, uchar selfValue)
 {
-	int firstBlackIndex = findFirstBlack( src, dst, startIndex, xIni, yIni, vX, vY, selfValue ); 
+	int firstBlackIndex = findFirstBlack( src, dst, startIndex, xIni, yIni, vX, vY, usedPoints, selfValue ); 
     if( firstBlackIndex == -1 )
         return E_ALL_WHITE;
 	
     // finds white pixel after the first black pixel
     startIndex = normalize(firstBlackIndex + 1);
-	int firstWhiteIndex = findFirstWhite( src, dst, startIndex, xIni, yIni, vX, vY, selfValue );   
+	int firstWhiteIndex = findFirstWhite( src, dst, startIndex, xIni, yIni, vX, vY, usedPoints, selfValue );   
     if( firstWhiteIndex == -1 )
         return E_ALL_BLACK;
 
@@ -192,16 +205,16 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
     double tan1, tan2, ang1, ang2;
     double conv = 180.0 / 3.1416;
 
-	Cor violeta(0x70, 0x0, 0x70);
-	Cor vermelho(0x70, 0x0, 0x0);
+	Cor violeta(0x70, 0x0, 0x70); // somente mais claros em volta. 
+	Cor vermelho(0x70, 0x0, 0x0); // somente pretos em volta
 	Cor azul( 0x0, 0x0, 0x70 );
-	Cor azulClaro( 0xA0, 0xA0, 0xFF);
-	Cor verdeClaro( 0xA0, 0xFF, 0xA0 );
+	Cor azulClaro( 0xA0, 0xA0, 0xFF); // Primeira trilha voltou para o primeiro pixel. sumTurns > 0
+	Cor verdeClaro( 0xA0, 0xFF, 0xA0 ); // sumTurns >= 0
 	Cor verdeEscuro( 0x0, 0x70, 0x0 );
-	Cor azulMax( 0x0, 0x0, 0xFF );
-	Cor verdeMax( 0x0, 0xFF, 0x0 );
-	Cor vermelhoMax( 0xFF, 0x0, 0x0 );
-	Cor amarelo( 0xFF, 0xFF, 0 );
+	Cor azulMax( 0x0, 0x0, 0xFF ); // first black pixel. Primeiro pixel escuro partindo do primeiro pixel de debug
+	Cor verdeMax( 0x0, 0xFF, 0x0 ); // segunda trilha
+	Cor vermelhoMax( 0xFF, 0x0, 0x0 ); // primeira trilha
+	Cor amarelo( 0xFF, 0xFF, 0 ); // X e Y selecionado de debug
     
     printf("Dims %d, %d\n", src.getHeight(), src.getWidth());
 
@@ -215,58 +228,75 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
             nextStartingIndex = 0;
             currX = x;
             currY = y;
-
-            int firstBlackIndex, lastBlackIndex; 
-            // first pixel
-            {
-                blackIndex = findWhiteBlackEdge(src, dst, currX, currY, vX, vY, nextStartingIndex, selfValue);
-				if( blackIndex == E_ALL_BLACK )
-                {
-                    dst.setRGB(x, y, vermelho);
-                    continue;
-                }
-                if( blackIndex == E_ALL_WHITE )
-                {
-                    dst.setRGB(x, y, violeta);
-                    continue;
-                }
-                firstBlackIndex = blackIndex;
-            }
-			lastBlackIndex = firstBlackIndex;
 			
-            if( x == xD && y == yD )
-                debugFirstBlackPixel.set( currX + vX[firstBlackIndex], currY + vY[firstBlackIndex] );
-
 			//nextStartingIndex = firstBlackIndex;
-            bool shouldContinue = false;
-            int sumTurns = 0;
-            for(int i(0); i < numPixelsString; ++i)
-            {
-                // clockwise
-                blackIndex = findWhiteBlackEdge(src, dst, currX, currY, vX, vY, nextStartingIndex, selfValue);
-                currX += vX[blackIndex];
-                currY += vY[blackIndex];
-                nextStartingIndex = normalize(blackIndex + 4);
-                if( x == xD && y == yD )
+			bool shouldContinue = false;
+			int sumTurns = 0;
+			int firstBlackIndex, lastBlackIndex;
+			// Primeira trilha
+			{ 
+				set<Point> usedPoints;
+				// first pixel
 				{
-					firstString.push_back(Point( currX, currY ));
-                    printf("left i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d\n", i, blackIndex, currX, currY, vX[blackIndex], vY[blackIndex]);
+					blackIndex = findWhiteBlackEdge(src, dst, currX, currY, vX, vY, nextStartingIndex, usedPoints, selfValue);
+					if( blackIndex == E_ALL_BLACK )
+					{
+						#ifdef DEBUG_COLORS
+							dst.setRGB(x, y, vermelho);
+						#endif
+						continue;
+					}
+					if( blackIndex == E_ALL_WHITE )
+					{
+						#ifdef DEBUG_COLORS
+							dst.setRGB(x, y, violeta);
+						#endif
+						continue;
+					}
+					firstBlackIndex = blackIndex;
+
+					usedPoints.insert( Point(x, y) );
 				}
+				lastBlackIndex = firstBlackIndex;
+			
+				if( x == xD && y == yD )
+					debugFirstBlackPixel.set( currX + vX[firstBlackIndex], currY + vY[firstBlackIndex] );
 
-                sumTurns += normalize(lastBlackIndex - blackIndex - 4);
-				// verifies if the pixel turned back to the first pixel
-                if( currX == x && currY == y && i > 0 )
-                {
-                    if( sumTurns > 0 )
-                        dst.setRGB(x, y, azulClaro);
-                    else
-                        dst.setRGB(x, y, azul);
-                    shouldContinue = true;
-                    break;
-                }
+				for(int i(0); i < numPixelsString; ++i)
+				{
+					// clockwise
+					blackIndex = findWhiteBlackEdge(src, dst, currX, currY, vX, vY, nextStartingIndex, usedPoints, selfValue);
+					currX += vX[blackIndex];
+					currY += vY[blackIndex];
+					nextStartingIndex = normalize(blackIndex + 4);
+					if( x == xD && y == yD )
+					{
+						firstString.push_back(Point( currX, currY ));
+						printf("left i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d\n", i, blackIndex, currX, currY, vX[blackIndex], vY[blackIndex]);
+					}
 
-                lastBlackIndex = blackIndex;
-            }
+					sumTurns += normalize(lastBlackIndex - blackIndex - 4);
+						
+					usedPoints.insert( Point(currX, currY) );
+
+					// verifies if the pixel turned back to the first pixel
+					if( currX == x && currY == y && i > 0 )
+					{
+						#ifdef DEBUG_COLORS
+							if( sumTurns > 0 )
+								dst.setRGB(x, y, azulClaro);
+							else
+								dst.setRGB(x, y, azul);
+						#endif
+						shouldContinue = true;
+						break;
+					}
+
+					lastBlackIndex = blackIndex;
+				}
+			}
+
+
             lastLeftX = currX;
             lastLeftY = currY;
             if( x == xD && y == yD )
@@ -283,40 +313,48 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 			nextStartingIndex = 8 - firstBlackIndex;
 			nextStartingIndex -= 1;
 			nextStartingIndex = normalize(nextStartingIndex);
-            for(int i(0); i < numPixelsString; ++i)
-            {
-                // counter-clockwise
-                blackIndex = findWhiteBlackEdge(src, dst, currX, currY, vXi, vYi, nextStartingIndex, selfValue); 
-                currX += vXi[blackIndex];
-                currY += vYi[blackIndex];
-                nextStartingIndex = normalize(blackIndex + 4);
-                
-                sumTurns += normalize(lastBlackIndex - blackIndex - 4);
-				// verifies if the pixel turned back to the first pixel
-                if( currX == lastLeftX && currY == lastLeftY )
-                {
-                    if( sumTurns < 0 )
-                        dst.setRGB(x, y, verdeEscuro);
-                    else
-                        dst.setRGB(x, y, verdeClaro);
-
-                    closed = true;
-                    if( x == xD && y == yD )
-					{
-                        printf("Right met lastLeft (%d, %d) %d\n", lastLeftX, lastLeftY, sumTurns);
-					}
-                    break;
-                }
-                lastBlackIndex = blackIndex;
-
-                if( x == xD && y == yD )
+			{
+				set<Point> usedPoints;
+				for(int i(0); i < numPixelsString; ++i)
 				{
-					secondString.push_back(Point( currX, currY ));
-                    printf("right i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d\n", i, blackIndex, currX, currY, vXi[blackIndex], vYi[blackIndex]);
+					// counter-clockwise
+					blackIndex = findWhiteBlackEdge(src, dst, currX, currY, vXi, vYi, nextStartingIndex, usedPoints, selfValue); 
+					currX += vXi[blackIndex];
+					currY += vYi[blackIndex];
+					nextStartingIndex = normalize(blackIndex + 4);
+                
+					sumTurns += normalize(lastBlackIndex - blackIndex - 4);
+
+					usedPoints.insert( Point(currX, currY) );
+
+					// verifies if the pixel turned back to the first pixel
+					if( currX == lastLeftX && currY == lastLeftY )
+					{
+						#ifdef DEBUG_COLORS
+							if( sumTurns < 0 )
+								dst.setRGB(x, y, verdeEscuro);
+							else
+								dst.setRGB(x, y, verdeClaro);
+						#endif
+
+						closed = true;
+						if( x == xD && y == yD )
+						{
+							printf("Right met lastLeft (%d, %d) %d\n", lastLeftX, lastLeftY, sumTurns);
+						}
+						break;
+					}
+					lastBlackIndex = blackIndex;
+
+					if( x == xD && y == yD )
+					{
+						secondString.push_back(Point( currX, currY ));
+						printf("right i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d\n", i, blackIndex, currX, currY, vXi[blackIndex], vYi[blackIndex]);
+					}
 				}
-            }
-            if( closed )
-                continue;
+				if( closed )
+					continue;
+			}
 
             lastRightX = currX;
             lastRightY = currY;
