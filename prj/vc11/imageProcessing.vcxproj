@@ -85,6 +85,7 @@
     <ClInclude Include="..\..\cpp\Edges.h" />
     <ClInclude Include="..\..\cpp\Image8Bits.h" />
     <ClInclude Include="..\..\cpp\ImageRGB.h" />
+    <ClInclude Include="..\..\cpp\myextension.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\cpp\Edges.cpp" />

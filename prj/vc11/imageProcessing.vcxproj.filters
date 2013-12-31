@@ -44,5 +44,8 @@
     <ClInclude Include="..\..\cpp\base.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\cpp\myextension.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
