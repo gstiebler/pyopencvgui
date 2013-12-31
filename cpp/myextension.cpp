@@ -216,6 +216,16 @@ void SeismicProcess::paintSumTurn( int sumTurns, int x, int y )
 }
 
 
+void SeismicProcess::calcSumTurn( int &sumTurns, int blackIndex, int lastBlackIndex )
+{
+	int stTemp = normalize( blackIndex - lastBlackIndex );
+	if( stTemp < 4 )
+		sumTurns += stTemp;
+	else
+		sumTurns -= stTemp - 4;
+}
+
+
 SeismicProcess::SeismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width ) :
 		src(srcImgData, width, height),
 		dst(dstImgData, width, height),
@@ -347,10 +357,10 @@ void SeismicProcess::executar( int numPixelsString, int xD, int yD )
 					if( x == xD && y == yD )
 					{
 						firstString.push_back(curr );
-						printf("left i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d\n", i, blackIndex, curr, _vX[blackIndex], _vY[blackIndex]);
+						printf("left i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d, sumTurns: %d\n", i, blackIndex, curr, _vX[blackIndex], _vY[blackIndex], sumTurns);
 					}
 
-					sumTurns += blackIndex - lastBlackIndex;
+					calcSumTurn( sumTurns, blackIndex, lastBlackIndex );
 
 					// verifies if the pixel turned back to the first pixel
 					if( curr._x == x && curr._y == y && i > 0 )
@@ -407,7 +417,7 @@ void SeismicProcess::executar( int numPixelsString, int xD, int yD )
 					curr._y += _vYi[blackIndex];
 					nextStartingIndex = normalize(blackIndex + 4);
                 
-					sumTurns += blackIndex - lastBlackIndex;
+					calcSumTurn( sumTurns, blackIndex, lastBlackIndex );
 
 					if( blackIndex == E_SPECIAL_POINT )
 					{
@@ -448,7 +458,7 @@ void SeismicProcess::executar( int numPixelsString, int xD, int yD )
 					if( x == xD && y == yD )
 					{
 						secondString.push_back( curr );
-						printf("right i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d\n", i, blackIndex, curr, _vXi[blackIndex], _vYi[blackIndex]);
+						printf("right i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d, sumTurns: %d\n", i, blackIndex, curr, _vXi[blackIndex], _vYi[blackIndex], sumTurns);
 					}
 				}
 				if( closed )

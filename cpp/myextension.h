@@ -42,6 +42,8 @@ private:
 
 	int normalize( int value );
 
+	void calcSumTurn( int &sumTurns, int blackIndex, int lastBlackIndex );
+
 	int findFirstWhite( int startIndex, char *vX, char *vY, Point &ini, uchar selfValue );
 	int findFirstBlack( int startIndex, char *vX, char *vY, Point &ini, Point &previousPoint, Point &specialPoint, uchar selfValue );
 
