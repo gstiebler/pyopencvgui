@@ -71,9 +71,9 @@ int normalize( int value )
 	return (value + 8) % 8;
 }
 
-enum FE_RESPONSE { E_ALL_BLACK = -1, E_ALL_WHITE = -2 };
+enum FE_RESPONSE { E_ALL_BLACK = -1, E_ALL_WHITE = -2, E_CLOSED_LOOP = -3 };
 
-int findFirstWhite( Image8Bits &src, ImageRGB &dst, int startIndex, int xIni, int yIni, char vX[16], char vY[16], set<Point> &usedPoints, uchar selfValue )
+int findFirstWhite( Image8Bits &src, ImageRGB &dst, int startIndex, Point &ini, char vX[16], char vY[16], set<Point> &usedPoints, uchar selfValue )
 {    
 	int deltaX, deltaY;
     int xIndex, yIndex;
@@ -81,8 +81,8 @@ int findFirstWhite( Image8Bits &src, ImageRGB &dst, int startIndex, int xIni, in
     {
 		deltaX = vX[i];
 		deltaY = vY[i];
-        xIndex = xIni + deltaX;
-        yIndex = yIni + deltaY;
+		xIndex = ini._x + deltaX;
+		yIndex = ini._y + deltaY;
 
 		Point p(xIndex, yIndex);
 		if( usedPoints.find( p ) != usedPoints.end() )
@@ -100,7 +100,7 @@ int findFirstWhite( Image8Bits &src, ImageRGB &dst, int startIndex, int xIni, in
 
 
 
-int findFirstBlack( Image8Bits &src, ImageRGB &dst, int startIndex, int xIni, int yIni, char vX[16], char vY[16], set<Point> &usedPoints, uchar selfValue )
+int findFirstBlack( Image8Bits &src, ImageRGB &dst, int startIndex, Point &ini, char vX[16], char vY[16], set<Point> &usedPoints, uchar selfValue )
 {
 	int deltaX, deltaY;
     int xIndex, yIndex;
@@ -108,12 +108,12 @@ int findFirstBlack( Image8Bits &src, ImageRGB &dst, int startIndex, int xIni, in
     {
 		deltaX = vX[i];
 		deltaY = vY[i];
-        xIndex = xIni + deltaX;
-        yIndex = yIni + deltaY;
+		xIndex = ini._x + deltaX;
+		yIndex = ini._y + deltaY;
 
 		Point p(xIndex, yIndex);
 		if( usedPoints.find( p ) != usedPoints.end() )
-			continue;
+			return E_CLOSED_LOOP; // loop fechado
 
         if( xIndex == 0 || yIndex == 0 || xIndex == src.getWidth() || yIndex == src.getHeight() )
             break;
@@ -123,37 +123,41 @@ int findFirstBlack( Image8Bits &src, ImageRGB &dst, int startIndex, int xIni, in
             return normalize(i);
     }
 
-    return -1;
+    return -1; // não encontrou
 }
 
 
 
-int findWhiteBlackEdge(Image8Bits &src, ImageRGB &dst, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex, set<Point> &usedPoints, uchar selfValue)
+int findWhiteBlackEdge(Image8Bits &src, ImageRGB &dst, Point &pointIni, char vX[16], char vY[16], uchar startIndex, set<Point> &usedPoints, uchar selfValue)
 {
-	int firstWhiteIndex = findFirstWhite( src, dst, startIndex, xIni, yIni, vX, vY, usedPoints, selfValue );   
+	int firstWhiteIndex = findFirstWhite( src, dst, startIndex, pointIni, vX, vY, usedPoints, selfValue );   
     if( firstWhiteIndex == -1 )
         return E_ALL_BLACK;
 
     // finds black pixel after the first white pixel
     startIndex = normalize(firstWhiteIndex + 1);
-	int firstBlackIndex = findFirstBlack( src, dst, startIndex, xIni, yIni, vX, vY, usedPoints, selfValue ); 
+	int firstBlackIndex = findFirstBlack( src, dst, startIndex, pointIni, vX, vY, usedPoints, selfValue ); 
     if( firstBlackIndex == -1 )
         return E_ALL_WHITE;
+	else if ( firstBlackIndex == E_CLOSED_LOOP ) 
+		return E_CLOSED_LOOP;
 
 	return firstBlackIndex;
 }
 
 
 
-int findBlackWhiteEdge(Image8Bits &src, ImageRGB &dst, int xIni, int yIni, char vX[16], char vY[16], uchar startIndex, set<Point> &usedPoints, uchar selfValue)
+int findBlackWhiteEdge(Image8Bits &src, ImageRGB &dst, Point &pointIni, char vX[16], char vY[16], uchar startIndex, set<Point> &usedPoints, uchar selfValue)
 {
-	int firstBlackIndex = findFirstBlack( src, dst, startIndex, xIni, yIni, vX, vY, usedPoints, selfValue ); 
+	int firstBlackIndex = findFirstBlack( src, dst, startIndex, pointIni, vX, vY, usedPoints, selfValue ); 
     if( firstBlackIndex == -1 )
         return E_ALL_WHITE;
+	else if ( firstBlackIndex == E_CLOSED_LOOP ) 
+		return E_CLOSED_LOOP;
 	
     // finds white pixel after the first black pixel
     startIndex = normalize(firstBlackIndex + 1);
-	int firstWhiteIndex = findFirstWhite( src, dst, startIndex, xIni, yIni, vX, vY, usedPoints, selfValue );   
+	int firstWhiteIndex = findFirstWhite( src, dst, startIndex, pointIni, vX, vY, usedPoints, selfValue );   
     if( firstWhiteIndex == -1 )
         return E_ALL_BLACK;
 
@@ -181,6 +185,27 @@ double quadrantCorrection( double ang, int x, int y)
         return ang;
     }
 } 
+
+
+void paintSumTurn(int sumTurns, ImageRGB &dst, int x, int y, Cor &branco, Cor &preto, Cor &verdeEscuro, Cor &verdeClaro)
+{
+	if( sumTurns < 0 )
+	{
+		#ifdef DEBUG_COLORS
+			dst.setRGB(x, y, verdeEscuro);
+		#else
+			dst.setRGB(x, y, branco);
+		#endif
+	}
+	else
+	{
+		#ifdef DEBUG_COLORS
+			dst.setRGB(x, y, verdeClaro);
+		#else
+			dst.setRGB(x, y, preto);
+		#endif
+	}
+}
  
 
 __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width, int numPixelsString, int xD, int yD) 
@@ -188,7 +213,8 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
     printf("h %d, w %d, n %d, x %d, y %d\n", height, width, numPixelsString, xD, yD);
     Image8Bits src(srcImgData, width, height);
     ImageRGB dst(dstImgData, width, height);
-	dst.setLum( 0 );
+	Cor rosa( 0xFF, 0xD0, 0xD0 );
+	dst.setRGB( rosa );
 
     char vX[16], vY[16], vXi[16], vYi[16];
     initDirections(vX, vY, vXi, vYi);
@@ -198,8 +224,7 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
     printf("Inicializou direcoes\n");
 
     int nextStartingIndex, blackIndex;
-    int currX, currY;
-    int lastLeftX, lastLeftY, lastRightX, lastRightY;
+    Point curr(0, 0), lastLeft(0, 0), lastRight(0, 0);
     int difXright, difYright, difXleft, difYleft;
     
     double tan1, tan2, ang1, ang2;
@@ -224,23 +249,24 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
     {
         for(int x(1); x < src.getWidth() - 1; ++x)
         {    
-            if( x == xD && y == yD )
-                printf("Debug (%d, %d) \n", x, y);
             uchar selfValue = src.pix(x, y);
+            if( x == xD && y == yD )
+                printf("Debug (%d, %d), lum: %d\n", x, y, selfValue);
+
             nextStartingIndex = 0;
-            currX = x;
-            currY = y;
+			curr.set(x, y);
 			
 			//nextStartingIndex = firstBlackIndex;
 			bool shouldContinue = false;
 			int sumTurns = 0;
 			int firstBlackIndex, lastBlackIndex;
+			set<Point> usedPoints;
+			usedPoints.insert( Point(x, y) );
 			// Primeira trilha
 			{ 
-				set<Point> usedPoints;
 				// first pixel
 				{
-					blackIndex = findWhiteBlackEdge(src, dst, currX, currY, vX, vY, nextStartingIndex, usedPoints, selfValue);
+					blackIndex = findWhiteBlackEdge(src, dst, curr, vX, vY, nextStartingIndex, usedPoints, selfValue);
 					if( blackIndex == E_ALL_BLACK )
 					{
 						#ifdef DEBUG_COLORS
@@ -248,30 +274,35 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 						#else
 							dst.setRGB(x, y, branco);
 						#endif
+							
+						if( x == xD && y == yD )
+							printf("E_ALL_BLACK\n", x, y, selfValue);
 						continue;
 					}
-					if( blackIndex == E_ALL_WHITE )
+					else if( blackIndex == E_ALL_WHITE )
 					{
 						#ifdef DEBUG_COLORS
 							dst.setRGB(x, y, violeta);
 						#else
 							dst.setRGB(x, y, preto);
 						#endif
+						if( x == xD && y == yD )
+							printf("E_ALL_WHITE\n", x, y, selfValue);
 						continue;
 					}
 					firstBlackIndex = blackIndex;
-
-					usedPoints.insert( Point(x, y) );
+					
+					usedPoints.insert( curr );
 				}
 				lastBlackIndex = firstBlackIndex;
 			
 				if( x == xD && y == yD )
-					debugFirstBlackPixel.set( currX + vX[firstBlackIndex], currY + vY[firstBlackIndex] );
+					debugFirstBlackPixel.set( curr._x + vX[firstBlackIndex], curr._y + vY[firstBlackIndex] );
 
 				for(int i(0); i < numPixelsString; ++i)
 				{
 					// clockwise
-					blackIndex = findWhiteBlackEdge(src, dst, currX, currY, vX, vY, nextStartingIndex, usedPoints, selfValue);
+					blackIndex = findWhiteBlackEdge(src, dst, curr, vX, vY, nextStartingIndex, usedPoints, selfValue);
 					
 					if( blackIndex == E_ALL_WHITE )
 					{
@@ -280,6 +311,8 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 						#else
 							dst.setRGB(x, y, preto);
 						#endif
+						if( x == xD && y == yD )
+							printf("E_ALL_WHITE\n", x, y, selfValue);
 						shouldContinue = true;
 						break;
 					}
@@ -290,25 +323,35 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 						#else
 							dst.setRGB(x, y, branco);
 						#endif
+						if( x == xD && y == yD )
+							printf("E_ALL_BLACK\n", x, y, selfValue);
+						shouldContinue = true;
+						break;
+					}
+					else if ( blackIndex == E_CLOSED_LOOP )
+					{
+						paintSumTurn(sumTurns, dst, x, y, branco, preto, verdeEscuro, verdeClaro);
+						if( x == xD && y == yD )
+							printf("E_CLOSED_LOOP\n", x, y, selfValue);
 						shouldContinue = true;
 						break;
 					}
 
-					currX += vX[blackIndex];
-					currY += vY[blackIndex];
+					curr._x += vX[blackIndex];
+					curr._y += vY[blackIndex];
 					nextStartingIndex = normalize(blackIndex + 4);
 					if( x == xD && y == yD )
 					{
-						firstString.push_back(Point( currX, currY ));
-						printf("left i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d\n", i, blackIndex, currX, currY, vX[blackIndex], vY[blackIndex]);
+						firstString.push_back(curr );
+						printf("left i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d\n", i, blackIndex, curr, vX[blackIndex], vY[blackIndex]);
 					}
 
-					sumTurns += normalize(lastBlackIndex - blackIndex - 4);
+					sumTurns += blackIndex - lastBlackIndex;
 						
-					usedPoints.insert( Point(currX, currY) );
+					usedPoints.insert( curr );
 
 					// verifies if the pixel turned back to the first pixel
-					if( currX == x && currY == y && i > 0 )
+					if( curr._x == x && curr._y == y && i > 0 )
 					{
 						if( sumTurns > 0 )
 						{
@@ -335,16 +378,15 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 			}
 
 
-            lastLeftX = currX;
-            lastLeftY = currY;
+            lastLeft = curr;
             if( x == xD && y == yD )
-                printf("Sum turn %d, lasts (%d, %d)\n", sumTurns, lastLeftX, lastLeftY);
+				printf("Sum turn %d, lasts (%d, %d)\n", sumTurns, lastLeft._x, lastLeft._y);
 
             if( shouldContinue )
                 continue;
 
-            currX = x;
-            currY = y;
+            curr._x = x;
+            curr._y = y;
             bool closed = false;
             sumTurns = 0;
 
@@ -352,18 +394,22 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 			nextStartingIndex -= 1;
 			nextStartingIndex = normalize(nextStartingIndex);
 			{
-				set<Point> usedPoints;
 				for(int i(0); i < numPixelsString; ++i)
 				{
 					// counter-clockwise
-					blackIndex = findWhiteBlackEdge(src, dst, currX, currY, vXi, vYi, nextStartingIndex, usedPoints, selfValue);
+					blackIndex = findWhiteBlackEdge(src, dst, curr, vXi, vYi, nextStartingIndex, usedPoints, selfValue);
+
+					curr._x += vXi[blackIndex];
+					curr._y += vYi[blackIndex];
+					nextStartingIndex = normalize(blackIndex + 4);
+                
+					sumTurns += blackIndex - lastBlackIndex;
+
 					if( blackIndex == E_ALL_WHITE )
 					{
-						#ifdef DEBUG_COLORS
-							dst.setRGB(x, y, violeta);
-						#else
-							dst.setRGB(x, y, preto);
-						#endif
+						paintSumTurn(sumTurns, dst, x, y, branco, preto, verdeEscuro, verdeClaro);
+						if( x == xD && y == yD )
+							printf("E_ALL_WHITE\n", x, y, selfValue);
 						shouldContinue = true;
 						break;
 					}
@@ -374,42 +420,31 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 						#else
 							dst.setRGB(x, y, branco);
 						#endif
+						if( x == xD && y == yD )
+							printf("E_ALL_BLACK\n", x, y, selfValue);
+						shouldContinue = true;
+						break;
+					}
+					else if ( blackIndex == E_CLOSED_LOOP )
+					{
+						paintSumTurn(sumTurns, dst, x, y, branco, preto, verdeEscuro, verdeClaro);
+						if( x == xD && y == yD )
+							printf("E_CLOSED_LOOP\n", x, y, selfValue);
 						shouldContinue = true;
 						break;
 					}
 
-					currX += vXi[blackIndex];
-					currY += vYi[blackIndex];
-					nextStartingIndex = normalize(blackIndex + 4);
-                
-					sumTurns += normalize(lastBlackIndex - blackIndex - 4);
-
-					usedPoints.insert( Point(currX, currY) );
+					usedPoints.insert( curr );
 
 					// verifies if the pixel turned back to the first pixel
-					if( currX == lastLeftX && currY == lastLeftY )
+					if( curr == lastLeft )
 					{
-						if( sumTurns < 0 )
-						{
-							#ifdef DEBUG_COLORS
-								dst.setRGB(x, y, verdeEscuro);
-							#else
-								dst.setRGB(x, y, branco);
-							#endif
-						}
-						else
-						{
-							#ifdef DEBUG_COLORS
-								dst.setRGB(x, y, verdeClaro);
-							#else
-								dst.setRGB(x, y, preto);
-							#endif
-						}
+						paintSumTurn(sumTurns, dst, x, y, branco, preto, verdeEscuro, verdeClaro);
 
 						closed = true;
 						if( x == xD && y == yD )
 						{
-							printf("Right met lastLeft (%d, %d) %d\n", lastLeftX, lastLeftY, sumTurns);
+							printf("Right met lastLeft (%d, %d) %d\n", lastLeft._x, lastLeft._y, sumTurns);
 						}
 						break;
 					}
@@ -417,8 +452,8 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 
 					if( x == xD && y == yD )
 					{
-						secondString.push_back(Point( currX, currY ));
-						printf("right i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d\n", i, blackIndex, currX, currY, vXi[blackIndex], vYi[blackIndex]);
+						secondString.push_back( curr );
+						printf("right i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d\n", i, blackIndex, curr, vXi[blackIndex], vYi[blackIndex]);
 					}
 				}
 				if( closed )
@@ -428,20 +463,18 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 					continue;
 			}
 
-            lastRightX = currX;
-            lastRightY = currY;
-
+            lastRight = curr;
             
-            difXright = lastRightX - x;
-            difYright = lastRightY - y;
+            difXright = lastRight._x - x;
+            difYright = lastRight._y - y;
             tan1 = 0.0;
             if(difXright != 0)
                 tan1 = - difYright * 1.0 / difXright;
             ang1 = atan( tan1 ) * conv;
             ang1 = quadrantCorrection( ang1, difXright, difYright );
             
-            difXleft = lastLeftX - x;
-            difYleft = lastLeftY - y;
+            difXleft = lastLeft._x- x;
+            difYleft = lastLeft._y - y;
             tan2 = 0.0;
             if(difXleft != 0)
                 tan2 = - difYleft * 1.0 / difXleft;

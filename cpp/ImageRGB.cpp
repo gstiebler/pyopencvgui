@@ -41,6 +41,18 @@ void ImageRGB::setRGB( int i, int j, const Cor &cor )
 	setRGB( i, j, cor.r, cor.g, cor.b );
 }
 
+void ImageRGB::setRGB( const Cor &cor )
+{
+	int size = _width * _height;
+	uchar *p = _data;
+	for( int i(0); i < size; ++i)
+	{		
+		*p++ = cor.r;
+		*p++ = cor.g;
+		*p++ = cor.b;
+	}
+}
+
 void ImageRGB::setLum( int i, int j, uchar lum )
 {
 	setRGB( i, j, lum, lum, lum );

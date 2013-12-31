@@ -25,6 +25,7 @@ public:
     void setB( int i, int j, uchar b );
 	void setLum( int i, int j, uchar lum );
 	void setLum( uchar lum );
+	void setRGB( const Cor &cor );
 
     uchar getR( int i, int j );
     uchar getG( int i, int j );
