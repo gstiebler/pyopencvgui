@@ -222,7 +222,7 @@ void SeismicProcess::calcSumTurn( int &sumTurns, int blackIndex, int lastBlackIn
 	if( stTemp < 4 )
 		sumTurns += stTemp;
 	else
-		sumTurns -= stTemp - 4;
+		sumTurns -= 8 - stTemp;
 }
 
 
@@ -401,7 +401,7 @@ void SeismicProcess::executar( int numPixelsString, int xD, int yD )
 
             curr.set(x, y);
             bool closed = false;
-            sumTurns = 0;
+            //sumTurns = 0;
 
 			nextStartingIndex = 8 - firstBlackIndex;
 			nextStartingIndex -= 1;
