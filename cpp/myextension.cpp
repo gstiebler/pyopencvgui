@@ -329,6 +329,12 @@ void SeismicProcess::executar( int numPixelsString, int xD, int yD )
 					// clockwise
 					blackIndex = findWhiteBlackEdge( curr, _vX, _vY, nextStartingIndex, previousPoint, specialPoint, selfValue);
 					previousPoint = curr;
+
+					curr._x += _vX[blackIndex];
+					curr._y += _vY[blackIndex];
+					nextStartingIndex = normalize(blackIndex + 4);
+
+					calcSumTurn( sumTurns, blackIndex, lastBlackIndex );
 					
 					if( blackIndex == E_SPECIAL_POINT )
 					{
@@ -350,17 +356,11 @@ void SeismicProcess::executar( int numPixelsString, int xD, int yD )
 						shouldContinue = true;
 						break;
 					}
-
-					curr._x += _vX[blackIndex];
-					curr._y += _vY[blackIndex];
-					nextStartingIndex = normalize(blackIndex + 4);
 					if( x == xD && y == yD )
 					{
 						firstString.push_back(curr );
 						printf("left i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d, sumTurns: %d\n", i, blackIndex, curr, _vX[blackIndex], _vY[blackIndex], sumTurns);
 					}
-
-					calcSumTurn( sumTurns, blackIndex, lastBlackIndex );
 
 					// verifies if the pixel turned back to the first pixel
 					if( curr._x == x && curr._y == y && i > 0 )
