@@ -70,8 +70,8 @@ void SeismicProcess::initDirections()
 
     for(int i(0); i < 16; ++i)
     {
-        _vXi[i] = _vX[15 - i];
-        _vYi[i] = _vY[15 - i];
+        _vXi[i] = _vX[i] * -1;
+        _vYi[i] = _vY[i];
     }
 }
 
@@ -403,9 +403,8 @@ void SeismicProcess::executar( int numPixelsString, int xD, int yD )
             bool closed = false;
             //sumTurns = 0;
 
-			nextStartingIndex = 8 - firstBlackIndex;
-			nextStartingIndex -= 1;
-			nextStartingIndex = normalize(nextStartingIndex);
+			nextStartingIndex = normalize( 4 - firstBlackIndex );
+			lastBlackIndex = nextStartingIndex;
 			{
 				for(int i(0); i < numPixelsString; ++i)
 				{
