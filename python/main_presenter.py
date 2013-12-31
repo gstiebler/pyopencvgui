@@ -39,4 +39,8 @@ class MainPresenter:
         for function in functions:
             self.main_window.add_custom_function( function ) 
             
-        self.load_image(os.path.dirname(__file__) + "/../bin/dj.bmp")
+        startupParams = dom1.getElementsByTagName("startupParams")[0]
+        fileName = startupParams.getElementsByTagName("fileName")[0].firstChild.data
+        completeFilePath = os.path.dirname(__file__) + fileName
+            
+        self.load_image(completeFilePath)

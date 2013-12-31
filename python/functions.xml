@@ -1,3 +1,4 @@
+<root>
 <functions>
     <function name="myfunc">
 		<srcLib>mylib</srcLib>
@@ -20,17 +21,17 @@
         <hasStats>no</hasStats>
 		<params>
 			<param name="numPixelsString" type="int">
-				<value>15</value>
+				<value>6</value>
 				<lower>0</lower>
 				<upper>50</upper>
 			</param>
 			<param name="xDebug" type="int">
-				<value>49</value>
+				<value>130</value>
 				<lower>0</lower>
 				<upper>1000</upper>
 			</param>
 			<param name="yDebug" type="int">
-				<value>27</value>
+				<value>11</value>
 				<lower>0</lower>
 				<upper>1000</upper>
 			</param>
@@ -110,3 +111,7 @@
 		</params>
     </function>
 </functions>
+<startupParams>
+	<fileName>/../bin/bolas_pontudas.bmp</fileName>
+</startupParams>
+</root>
