@@ -42,6 +42,8 @@ __declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *ds
 	seismicProcess.executar( numPixelsString, xD, yD );
 }
 
+} // end extern "C"
+
 
 
 void SeismicProcess::initDirections()
@@ -79,7 +81,7 @@ int SeismicProcess::normalize( int value )
 }
 
 
-int SeismicProcess::findFirstWhite( int startIndex, char *vX, char *vY, Point &ini, set<Point> &usedPoints, uchar selfValue )
+int SeismicProcess::findFirstWhite( int startIndex, char *vX, char *vY, Point &ini, uchar selfValue )
 {    
 	int deltaX, deltaY;
     int xIndex, yIndex;
@@ -89,10 +91,6 @@ int SeismicProcess::findFirstWhite( int startIndex, char *vX, char *vY, Point &i
 		deltaY = vY[i];
 		xIndex = ini._x + deltaX;
 		yIndex = ini._y + deltaY;
-
-		Point p(xIndex, yIndex);
-		if( usedPoints.find( p ) != usedPoints.end() )
-			continue;
 
         if( xIndex == 0 || yIndex == 0 || xIndex == src.getWidth() || yIndex == src.getHeight() )
             break;
@@ -106,7 +104,7 @@ int SeismicProcess::findFirstWhite( int startIndex, char *vX, char *vY, Point &i
 
 
 
-int SeismicProcess::findFirstBlack( int startIndex, char *vX, char *vY, Point &ini, set<Point> &usedPoints, uchar selfValue )
+int SeismicProcess::findFirstBlack( int startIndex, char *vX, char *vY, Point &ini, Point &previousPoint, Point &specialPoint, uchar selfValue )
 {
 	int deltaX, deltaY;
     int xIndex, yIndex;
@@ -118,8 +116,10 @@ int SeismicProcess::findFirstBlack( int startIndex, char *vX, char *vY, Point &i
 		yIndex = ini._y + deltaY;
 
 		Point p(xIndex, yIndex);
-		if( usedPoints.find( p ) != usedPoints.end() )
-			return E_CLOSED_LOOP; // loop fechado
+		if( p == previousPoint )
+			return E_PREVIOUS_POINT;
+		if( p == specialPoint ) 
+			return E_SPECIAL_POINT;
 
         if( xIndex == 0 || yIndex == 0 || xIndex == src.getWidth() || yIndex == src.getHeight() )
             break;
@@ -134,36 +134,38 @@ int SeismicProcess::findFirstBlack( int startIndex, char *vX, char *vY, Point &i
 
 
 
-int SeismicProcess::findWhiteBlackEdge( Point &pointIni, char *vX, char *vY, uchar startIndex, set<Point> &usedPoints, uchar selfValue)
+int SeismicProcess::findWhiteBlackEdge( Point &pointIni, char *vX, char *vY, uchar startIndex, Point &previousPoint, Point &specialPoint, uchar selfValue)
 {
-	int firstWhiteIndex = findFirstWhite( startIndex, vX, vY, pointIni, usedPoints, selfValue );   
+	int firstWhiteIndex = findFirstWhite( startIndex, vX, vY, pointIni, selfValue );   
     if( firstWhiteIndex == -1 )
         return E_ALL_BLACK;
 
     // finds black pixel after the first white pixel
     startIndex = normalize(firstWhiteIndex + 1);
-	int firstBlackIndex = findFirstBlack( startIndex, vX, vY, pointIni, usedPoints, selfValue ); 
+	int firstBlackIndex = findFirstBlack( startIndex, vX, vY, pointIni, previousPoint, specialPoint, selfValue ); 
     if( firstBlackIndex == -1 )
         return E_ALL_WHITE;
-	else if ( firstBlackIndex == E_CLOSED_LOOP ) 
-		return E_CLOSED_LOOP;
+	// valores especiais
+	else if ( firstBlackIndex < -2 ) 
+		return firstBlackIndex;
 
 	return firstBlackIndex;
 }
 
 
 
-int SeismicProcess::findBlackWhiteEdge( Point &pointIni, char *vX, char *vY, uchar startIndex, set<Point> &usedPoints, uchar selfValue)
+int SeismicProcess::findBlackWhiteEdge( Point &pointIni, char *vX, char *vY, uchar startIndex, Point &previousPoint, Point &specialPoint, uchar selfValue)
 {
-	int firstBlackIndex = findFirstBlack( startIndex, vX, vY, pointIni, usedPoints, selfValue ); 
+	int firstBlackIndex = findFirstBlack( startIndex, vX, vY, pointIni, previousPoint, specialPoint, selfValue ); 
     if( firstBlackIndex == -1 )
         return E_ALL_WHITE;
-	else if ( firstBlackIndex == E_CLOSED_LOOP ) 
-		return E_CLOSED_LOOP;
+	else if ( firstBlackIndex < -2 ) 
+		return firstBlackIndex;
 	
     // finds white pixel after the first black pixel
     startIndex = normalize(firstBlackIndex + 1);
-	int firstWhiteIndex = findFirstWhite( startIndex, vX, vY, pointIni, usedPoints, selfValue );   
+	int firstWhiteIndex = findFirstWhite( startIndex, vX, vY, pointIni, selfValue );   
+	// valores especiais
     if( firstWhiteIndex == -1 )
         return E_ALL_BLACK;
 
@@ -251,8 +253,6 @@ void SeismicProcess::executar( int numPixelsString, int xD, int yD )
 	vector<Point> firstString, secondString;
 	Point debugFirstBlackPixel(0, 0);
 
-    printf("Inicializou direcoes\n");
-
     int nextStartingIndex, blackIndex;
     Point curr(0, 0), lastLeft(0, 0), lastRight(0, 0);
     int difXright, difYright, difXleft, difYleft;
@@ -271,19 +271,19 @@ void SeismicProcess::executar( int numPixelsString, int xD, int yD )
                 printf("Debug (%d, %d), lum: %d\n", x, y, selfValue);
 
             nextStartingIndex = 0;
-			curr.set(x, y);
 			
+			Point previousPoint(x, y);
+			Point specialPoint(x, y);
 			//nextStartingIndex = firstBlackIndex;
 			bool shouldContinue = false;
 			int sumTurns = 0;
 			int firstBlackIndex, lastBlackIndex;
-			set<Point> usedPoints;
-			usedPoints.insert( Point(x, y) );
 			// Primeira trilha
 			{ 
+				curr.set(x, y);
 				// first pixel
 				{
-					blackIndex = findWhiteBlackEdge( curr, _vX, _vY, nextStartingIndex, usedPoints, selfValue);
+					blackIndex = findWhiteBlackEdge( curr, _vX, _vY, nextStartingIndex, previousPoint, specialPoint, selfValue);
 					if( blackIndex == E_ALL_BLACK )
 					{
 						#ifdef DEBUG_COLORS
@@ -308,8 +308,6 @@ void SeismicProcess::executar( int numPixelsString, int xD, int yD )
 						continue;
 					}
 					firstBlackIndex = blackIndex;
-					
-					usedPoints.insert( curr );
 				}
 				lastBlackIndex = firstBlackIndex;
 			
@@ -319,9 +317,18 @@ void SeismicProcess::executar( int numPixelsString, int xD, int yD )
 				for(int i(0); i < numPixelsString; ++i)
 				{
 					// clockwise
-					blackIndex = findWhiteBlackEdge( curr, _vX, _vY, nextStartingIndex, usedPoints, selfValue);
+					blackIndex = findWhiteBlackEdge( curr, _vX, _vY, nextStartingIndex, previousPoint, specialPoint, selfValue);
+					previousPoint = curr;
 					
-					if( blackIndex == E_ALL_WHITE )
+					if( blackIndex == E_SPECIAL_POINT )
+					{
+						paintSumTurn(sumTurns, x, y );
+						if( x == xD && y == yD )
+							printf("E_SPECIAL_POINT, sumTurns: %d\n", sumTurns);
+						shouldContinue = true;
+						break;
+					}
+					else if( blackIndex == E_PREVIOUS_POINT )
 					{
 						#ifdef DEBUG_COLORS
 							dst.setRGB(x, y, violeta);
@@ -329,27 +336,7 @@ void SeismicProcess::executar( int numPixelsString, int xD, int yD )
 							dst.setRGB(x, y, preto);
 						#endif
 						if( x == xD && y == yD )
-							printf("E_ALL_WHITE\n", x, y, selfValue);
-						shouldContinue = true;
-						break;
-					}
-					else if( blackIndex == E_ALL_BLACK )
-					{
-						#ifdef DEBUG_COLORS
-							dst.setRGB(x, y, vermelho);
-						#else
-							dst.setRGB(x, y, branco);
-						#endif
-						if( x == xD && y == yD )
-							printf("E_ALL_BLACK\n", x, y, selfValue);
-						shouldContinue = true;
-						break;
-					}
-					else if ( blackIndex == E_CLOSED_LOOP )
-					{
-						paintSumTurn(sumTurns, x, y );
-						if( x == xD && y == yD )
-							printf("E_CLOSED_LOOP\n", x, y, selfValue);
+							printf("E_PREVIOUS_POINT\n", x, y, selfValue);
 						shouldContinue = true;
 						break;
 					}
@@ -364,8 +351,6 @@ void SeismicProcess::executar( int numPixelsString, int xD, int yD )
 					}
 
 					sumTurns += blackIndex - lastBlackIndex;
-						
-					usedPoints.insert( curr );
 
 					// verifies if the pixel turned back to the first pixel
 					if( curr._x == x && curr._y == y && i > 0 )
@@ -396,14 +381,15 @@ void SeismicProcess::executar( int numPixelsString, int xD, int yD )
 
 
             lastLeft = curr;
+			specialPoint = lastLeft;
+			previousPoint.set(x, y);
             if( x == xD && y == yD )
 				printf("Sum turn %d, lasts (%d, %d)\n", sumTurns, lastLeft._x, lastLeft._y);
 
             if( shouldContinue )
                 continue;
 
-            curr._x = x;
-            curr._y = y;
+            curr.set(x, y);
             bool closed = false;
             sumTurns = 0;
 
@@ -414,7 +400,8 @@ void SeismicProcess::executar( int numPixelsString, int xD, int yD )
 				for(int i(0); i < numPixelsString; ++i)
 				{
 					// counter-clockwise
-					blackIndex = findWhiteBlackEdge( curr, _vXi, _vYi, nextStartingIndex, usedPoints, selfValue);
+					blackIndex = findWhiteBlackEdge( curr, _vXi, _vYi, nextStartingIndex, previousPoint, specialPoint, selfValue);
+					previousPoint = curr;
 
 					curr._x += _vXi[blackIndex];
 					curr._y += _vYi[blackIndex];
@@ -422,36 +409,27 @@ void SeismicProcess::executar( int numPixelsString, int xD, int yD )
                 
 					sumTurns += blackIndex - lastBlackIndex;
 
-					if( blackIndex == E_ALL_WHITE )
+					if( blackIndex == E_SPECIAL_POINT )
 					{
 						paintSumTurn(sumTurns, x, y );
 						if( x == xD && y == yD )
-							printf("E_ALL_WHITE\n", x, y, selfValue);
+							printf("E_SPECIAL_POINT, sumTurns: %d\n", sumTurns);
+
 						shouldContinue = true;
 						break;
 					}
-					else if( blackIndex == E_ALL_BLACK )
+					else if( blackIndex == E_PREVIOUS_POINT )
 					{
 						#ifdef DEBUG_COLORS
-							dst.setRGB(x, y, vermelho);
+							dst.setRGB(x, y, violeta);
 						#else
-							dst.setRGB(x, y, branco);
+							dst.setRGB(x, y, preto);
 						#endif
 						if( x == xD && y == yD )
-							printf("E_ALL_BLACK\n", x, y, selfValue);
+							printf("E_PREVIOUS_POINT\n", x, y, selfValue);
 						shouldContinue = true;
 						break;
 					}
-					else if ( blackIndex == E_CLOSED_LOOP )
-					{
-						paintSumTurn(sumTurns, x, y );
-						if( x == xD && y == yD )
-							printf("E_CLOSED_LOOP\n", x, y, selfValue);
-						shouldContinue = true;
-						break;
-					}
-
-					usedPoints.insert( curr );
 
 					// verifies if the pixel turned back to the first pixel
 					if( curr == lastLeft )
@@ -530,6 +508,4 @@ void SeismicProcess::executar( int numPixelsString, int xD, int yD )
 	dst.setRGB( debugFirstBlackPixel._x, debugFirstBlackPixel._y, azulMax );
 	dst.setRGB( xD, yD, amarelo );
 }
-
-} // end extern "C"
 

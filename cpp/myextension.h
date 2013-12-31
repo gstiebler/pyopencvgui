@@ -17,7 +17,7 @@ public:
 	
 private:
 		
-	enum FE_RESPONSE { E_ALL_BLACK = -1, E_ALL_WHITE = -2, E_CLOSED_LOOP = -3 };
+	enum FE_RESPONSE { E_ALL_BLACK = -1, E_ALL_WHITE = -2, E_PREVIOUS_POINT = -3, E_SPECIAL_POINT = -4 };
 
 	char _vX[16], _vY[16], _vXi[16], _vYi[16];
 
@@ -42,12 +42,12 @@ private:
 
 	int normalize( int value );
 
-	int findFirstWhite( int startIndex, char *vX, char *vY, Point &ini, std::set<Point> &usedPoints, uchar selfValue );
-	int findFirstBlack( int startIndex, char *vX, char *vY, Point &ini, std::set<Point> &usedPoints, uchar selfValue );
+	int findFirstWhite( int startIndex, char *vX, char *vY, Point &ini, uchar selfValue );
+	int findFirstBlack( int startIndex, char *vX, char *vY, Point &ini, Point &previousPoint, Point &specialPoint, uchar selfValue );
 
 	
-	int findWhiteBlackEdge( Point &pointIni, char *vX, char *vY, uchar startIndex, std::set<Point> &usedPoints, uchar selfValue);
-	int findBlackWhiteEdge( Point &pointIni, char *vX, char *vY, uchar startIndex, std::set<Point> &usedPoints, uchar selfValue);
+	int findWhiteBlackEdge( Point &pointIni, char *vX, char *vY, uchar startIndex, Point &previousPoint, Point &specialPoint, uchar selfValue);
+	int findBlackWhiteEdge( Point &pointIni, char *vX, char *vY, uchar startIndex, Point &previousPoint, Point &specialPoint, uchar selfValue);
 
 	double quadrantCorrection( double ang, int x, int y);
 
