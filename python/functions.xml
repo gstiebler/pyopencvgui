@@ -26,12 +26,12 @@
 				<upper>50</upper>
 			</param>
 			<param name="xDebug" type="int">
-				<value>130</value>
+				<value>157</value>
 				<lower>0</lower>
 				<upper>1000</upper>
 			</param>
 			<param name="yDebug" type="int">
-				<value>11</value>
+				<value>90</value>
 				<lower>0</lower>
 				<upper>1000</upper>
 			</param>
@@ -112,6 +112,6 @@
     </function>
 </functions>
 <startupParams>
-	<fileName>/../bin/bolas_pontudas.bmp</fileName>
+	<fileName>/../bin/dj.bmp</fileName>
 </startupParams>
 </root>

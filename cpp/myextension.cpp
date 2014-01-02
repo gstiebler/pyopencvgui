@@ -403,8 +403,8 @@ void SeismicProcess::executar( int numPixelsString, int xD, int yD )
             bool closed = false;
             //sumTurns = 0;
 
-			nextStartingIndex = normalize( 4 - firstBlackIndex );
-			lastBlackIndex = nextStartingIndex;
+			nextStartingIndex = normalize( 8 - firstBlackIndex );
+			lastBlackIndex = normalize( 4 - nextStartingIndex );
 			{
 				for(int i(0); i < numPixelsString; ++i)
 				{
