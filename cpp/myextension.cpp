@@ -219,7 +219,7 @@ void SeismicProcess::paintSumTurn( int sumTurns, int x, int y )
 void SeismicProcess::calcSumTurn( int &sumTurns, int blackIndex, int lastBlackIndex )
 {
 	int stTemp = normalize( blackIndex - lastBlackIndex );
-	if( stTemp < 4 )
+	if( stTemp <= 4 )
 		sumTurns += stTemp;
 	else
 		sumTurns -= 8 - stTemp;
