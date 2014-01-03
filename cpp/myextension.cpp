@@ -263,6 +263,11 @@ void SeismicProcess::executar()
 	printf("n %d, x %d, y %d\n", _numPixelsString, _xD, _yD);
 	dst.setRGB( rosa );
 
+	const int THRESH = 128;
+
+	const int MIN_VALUE = -128;
+	const int MAX_VALUE = 127;
+
 	vector<Point> firstString, secondString;
 	Point debugFirstBlackPixel(0, 0);
     
@@ -277,9 +282,31 @@ void SeismicProcess::executar()
             if( x == _xD && y == _yD )
                 printf("Debug (%d, %d), lum: %d\n", x, y, selfValue);
 
-			Cor color = processPixel( x, y, selfValue );
+			int minValue = selfValue + MIN_VALUE;
+			int maxValue = selfValue + MAX_VALUE;
 
-			dst.setRGB( x, y, color );
+			if( minValue < 0 )
+				minValue = 0;
+
+			if( maxValue > 255 )
+				maxValue = 255;
+
+			int currValue;
+
+			while( (maxValue - minValue) <= 1 )
+			{
+				currValue = (maxValue + minValue) / 2;
+				Cor color = processPixel( x, y, currValue );
+
+				if( color.r > 128 )
+					maxValue = color.r;
+				else
+					minValue = color.r;
+			}
+
+			uchar finalValue = 255 - (uchar) ( minValue - selfValue - MIN_VALUE );
+
+			dst.setRGB( x, y, Cor( finalValue, finalValue, finalValue ) );
 
 			//if( x == _xD && y == _yD )
 			//{
