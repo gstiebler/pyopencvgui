@@ -9,11 +9,11 @@
 class SeismicProcess
 {
 public:
-	SeismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width);
+	SeismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width, int numPixelsString, int xD, int yD );
 
 	~SeismicProcess();
 
-	void executar( int numPixelsString, int xD, int yD );
+	void executar();
 	
 private:
 		
@@ -23,6 +23,10 @@ private:
 
 	Image8Bits src;
 	ImageRGB dst;
+
+	int _numPixelsString;
+	int _xD;
+	int _yD;
 
 	Cor violeta; // somente mais claros em volta. 
 	Cor vermelho; // somente pretos em volta
@@ -53,7 +57,9 @@ private:
 
 	double quadrantCorrection( double ang, int x, int y);
 
-	void paintSumTurn(int sumTurns, int x, int y );
+	Cor paintSumTurn(int sumTurns, int x, int y );
+
+	Cor processPixel( int x, int y, int selfValue );
 };
 
 #endif
