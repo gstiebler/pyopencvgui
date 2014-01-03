@@ -293,18 +293,18 @@ void SeismicProcess::executar()
 
 			int currValue;
 
-			while( (maxValue - minValue) <= 1 )
+			while( (maxValue - minValue) > 1 )
 			{
 				currValue = (maxValue + minValue) / 2;
 				Cor color = processPixel( x, y, currValue );
 
 				if( color.r > 128 )
-					maxValue = color.r;
+					maxValue = currValue;
 				else
-					minValue = color.r;
+					minValue = currValue;
 			}
 
-			uchar finalValue = 255 - (uchar) ( minValue - selfValue - MIN_VALUE );
+			uchar finalValue = (uchar) ( minValue - selfValue - MIN_VALUE );
 
 			dst.setRGB( x, y, Cor( finalValue, finalValue, finalValue ) );
 
