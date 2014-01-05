@@ -25,13 +25,18 @@
 				<lower>0</lower>
 				<upper>50</upper>
 			</param>
+			<param name="offset" type="int">
+				<value>-0</value>
+				<lower>-64</lower>
+				<upper>64</upper>
+			</param>
 			<param name="xDebug" type="int">
-				<value>157</value>
+				<value>5</value>
 				<lower>0</lower>
 				<upper>1000</upper>
 			</param>
 			<param name="yDebug" type="int">
-				<value>90</value>
+				<value>5</value>
 				<lower>0</lower>
 				<upper>1000</upper>
 			</param>

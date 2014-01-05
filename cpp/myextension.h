@@ -13,7 +13,7 @@ public:
 
 	~SeismicProcess();
 
-	void executar();
+	void executar( int offset );
 	
 private:
 		

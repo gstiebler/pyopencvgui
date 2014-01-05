@@ -36,10 +36,10 @@ __declspec(dllexport) void __stdcall myfunc(uchar *srcImgData, uchar *dstImgData
 
 
 
-__declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width, int numPixelsString, int xD, int yD) 
+__declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width, int numPixelsString, int offset, int xD, int yD) 
 {
 	SeismicProcess seismicProcess( srcImgData, dstImgData, height, width, numPixelsString, xD, yD );
-	seismicProcess.executar();
+	seismicProcess.executar( offset );
 }
 
 } // end extern "C"
@@ -258,7 +258,7 @@ SeismicProcess::~SeismicProcess()
 }
 
 
-void SeismicProcess::executar()
+void SeismicProcess::executar( int offset )
 {
 	printf("n %d, x %d, y %d\n", _numPixelsString, _xD, _yD);
 	dst.setRGB( rosa );
@@ -274,10 +274,17 @@ void SeismicProcess::executar()
         {    
             uchar selfValue = src.pix(x, y);
 
-            if( x == _xD && y == _yD )
-                printf("Debug (%d, %d), lum: %d\n", x, y, selfValue);
+			int value = selfValue + offset;
 
-			Cor color = processPixel( x, y, selfValue );
+			if(value < 0)
+				value = 0;
+			if(value > 255)
+				value = 255;
+
+            if( x == _xD && y == _yD )
+                printf("Debug (%d, %d), lum: %d\n", x, y, selfValue );
+
+			Cor color = processPixel( x, y, (uchar) value );
 
 			dst.setRGB( x, y, color );
 
