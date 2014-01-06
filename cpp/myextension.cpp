@@ -487,6 +487,9 @@ Cor SeismicProcess::processPixel( int x, int y, int selfValue, bool debugPoint, 
 		}
 	}
 
+	if(sumTurns > 0)
+		return preto;
+
     lastRight = curr;
             
     difXright = lastRight._x - x;

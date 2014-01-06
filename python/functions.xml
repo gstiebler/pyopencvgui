@@ -26,17 +26,17 @@
 				<upper>50</upper>
 			</param>
 			<param name="offset" type="int">
-				<value>-0</value>
+				<value>-3</value>
 				<lower>-64</lower>
 				<upper>64</upper>
 			</param>
 			<param name="xDebug" type="int">
-				<value>5</value>
+				<value>87</value>
 				<lower>0</lower>
 				<upper>1000</upper>
 			</param>
 			<param name="yDebug" type="int">
-				<value>5</value>
+				<value>79</value>
 				<lower>0</lower>
 				<upper>1000</upper>
 			</param>
