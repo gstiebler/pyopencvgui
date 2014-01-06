@@ -5,6 +5,7 @@
 #include "Image8Bits.h"
 #include "ImageRGB.h"
 #include <set>
+#include <vector>
 
 class SeismicProcess
 {
@@ -59,7 +60,7 @@ private:
 
 	Cor paintSumTurn(int sumTurns, int x, int y );
 
-	Cor processPixel( int x, int y, int selfValue );
+	Cor processPixel( int x, int y, int selfValue, bool debugPoint, std::vector<Point> &firstString, std::vector<Point> &secondString );
 };
 
 #endif

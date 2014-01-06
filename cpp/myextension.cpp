@@ -284,7 +284,8 @@ void SeismicProcess::executar( int offset )
             if( x == _xD && y == _yD )
                 printf("Debug (%d, %d), lum: %d\n", x, y, selfValue );
 
-			Cor color = processPixel( x, y, (uchar) value );
+			bool debugPoint = x == _xD && y == _yD;
+			Cor color = processPixel( x, y, (uchar) value, debugPoint, firstString, secondString );
 
 			dst.setRGB( x, y, color );
 
@@ -312,7 +313,7 @@ void SeismicProcess::executar( int offset )
 
 
 
-Cor SeismicProcess::processPixel( int x, int y, int selfValue )
+Cor SeismicProcess::processPixel( int x, int y, int selfValue, bool debugPoint, vector<Point> &firstString, vector<Point> &secondString )
 {
     int nextStartingIndex, blackIndex;
     Point curr(0, 0), lastLeft(0, 0), lastRight(0, 0);
@@ -342,8 +343,8 @@ Cor SeismicProcess::processPixel( int x, int y, int selfValue )
 					return branco;
 				#endif
 							
-				//if( x == _xD && y == _yD )
-				//	printf("E_ALL_BLACK\n", x, y, selfValue);
+				if( debugPoint )
+					printf("E_ALL_BLACK\n", x, y, selfValue);
 				return branco;
 			}
 			else if( blackIndex == E_ALL_WHITE )
@@ -353,8 +354,8 @@ Cor SeismicProcess::processPixel( int x, int y, int selfValue )
 				#else
 					return preto;
 				#endif
-				//if( x == _xD && y == _yD )
-				//	printf("E_ALL_WHITE\n", x, y, selfValue);
+				if( debugPoint )
+					printf("E_ALL_WHITE\n", x, y, selfValue);
 				return preto;
 			}
 			firstBlackIndex = blackIndex;
@@ -379,14 +380,14 @@ Cor SeismicProcess::processPixel( int x, int y, int selfValue )
 			if( blackIndex == E_SPECIAL_POINT )
 			{
 				Cor ctemp = paintSumTurn(sumTurns, x, y );
-				//if( x == _xD && y == _yD )
-				//	printf("E_SPECIAL_POINT, sumTurns: %d\n", sumTurns);
+				if( debugPoint )
+					printf("E_SPECIAL_POINT, sumTurns: %d\n", sumTurns);
 				return ctemp;
 			}
 			else if( blackIndex == E_PREVIOUS_POINT )
 			{
-				//if( x == _xD && y == _yD )
-				//	printf("E_PREVIOUS_POINT\n", x, y, selfValue);
+				if( debugPoint )
+					printf("E_PREVIOUS_POINT\n", x, y, selfValue);
 
 				#ifdef DEBUG_COLORS
 					return violeta;
@@ -394,11 +395,11 @@ Cor SeismicProcess::processPixel( int x, int y, int selfValue )
 					return preto;
 				#endif
 			}
-			//if( x == _xD && y == _yD )
-			//{
-			//	firstString.push_back(curr );
-			//	printf("left i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d, sumTurns: %d\n", i, blackIndex, curr, _vX[blackIndex], _vY[blackIndex], sumTurns);
-			//}
+			if( debugPoint )
+			{
+				firstString.push_back(curr );
+				printf("left i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d, sumTurns: %d\n", i, blackIndex, curr, _vX[blackIndex], _vY[blackIndex], sumTurns);
+			}
 
 			// verifies if the pixel turned back to the first pixel
 			if( curr._x == x && curr._y == y && i > 0 )
@@ -429,8 +430,8 @@ Cor SeismicProcess::processPixel( int x, int y, int selfValue )
     lastLeft = curr;
 	specialPoint = lastLeft;
 	previousPoint.set(x, y);
-  //  if( x == _xD && y == _yD )
-		//printf("Sum turn %d, lasts (%d, %d)\n", sumTurns, lastLeft._x, lastLeft._y);
+	if( debugPoint )
+		printf("Sum turn %d, lasts (%d, %d)\n", sumTurns, lastLeft._x, lastLeft._y);
 
     curr.set(x, y);
     //sumTurns = 0;
@@ -453,15 +454,15 @@ Cor SeismicProcess::processPixel( int x, int y, int selfValue )
 			if( blackIndex == E_SPECIAL_POINT )
 			{
 				Cor ctemp = paintSumTurn(sumTurns, x, y );
-				//if( x == _xD && y == _yD )
-				//	printf("E_SPECIAL_POINT, sumTurns: %d\n", sumTurns);
+				if( debugPoint )
+					printf("E_SPECIAL_POINT, sumTurns: %d\n", sumTurns);
 
 				return ctemp;
 			}
 			else if( blackIndex == E_PREVIOUS_POINT )
 			{
-				//if( x == _xD && y == _yD )
-				//	printf("E_PREVIOUS_POINT\n", x, y, selfValue);
+				if( debugPoint )
+					printf("E_PREVIOUS_POINT\n", x, y, selfValue);
 
 				#ifdef DEBUG_COLORS
 					return violeta;
@@ -475,18 +476,18 @@ Cor SeismicProcess::processPixel( int x, int y, int selfValue )
 			{
 				Cor ctemp = paintSumTurn(sumTurns,  x, y );
 
-				//if( x == _xD && y == _yD )
-				//	printf("Right met lastLeft (%d, %d) %d\n", lastLeft._x, lastLeft._y, sumTurns);
+				if( debugPoint )
+					printf("Right met lastLeft (%d, %d) %d\n", lastLeft._x, lastLeft._y, sumTurns);
 
 				return ctemp;
 			}
 			lastBlackIndex = blackIndex;
 
-			//if( x == _xD && y == _yD )
-			//{
-			//	secondString.push_back( curr );
-			//	printf("right i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d, sumTurns: %d\n", i, blackIndex, curr, _vXi[blackIndex], _vYi[blackIndex], sumTurns);
-			//}
+			if( debugPoint )
+			{
+				secondString.push_back( curr );
+				printf("right i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d, sumTurns: %d\n", i, blackIndex, curr, _vXi[blackIndex], _vYi[blackIndex], sumTurns);
+			}
 		}
 	}
 
