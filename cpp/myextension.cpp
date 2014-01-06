@@ -289,15 +289,6 @@ void SeismicProcess::executar( int offset )
 
 			dst.setRGB( x, y, color );
 
-			//if( x == _xD && y == _yD )
-			//{
-			//	printf(" --------------- \n");
-			//	printf("difXright: %d, difYright: %d\n", difXright, difYright);
-			//	printf("difXleft: %d, difYleft: %d\n", difXleft, difYleft);
-			//	printf("tan1: %f, tan2: %f, ang1: %f, ang2: %f, difAng: %f, dist180: %f, val: %f\n", tan1, tan2, ang1, ang2, difAng, dist180, val);
-			//	printf("\n");
-			//}
-
 	    }
     }
 
@@ -430,14 +421,19 @@ Cor SeismicProcess::processPixel( int x, int y, int selfValue, bool debugPoint, 
     lastLeft = curr;
 	specialPoint = lastLeft;
 	previousPoint.set(x, y);
-	if( debugPoint )
-		printf("Sum turn %d, lasts (%d, %d)\n", sumTurns, lastLeft._x, lastLeft._y);
 
     curr.set(x, y);
     //sumTurns = 0;
 
 	nextStartingIndex = normalize( 8 - firstBlackIndex );
-	lastBlackIndex = normalize( 4 - nextStartingIndex );
+	lastBlackIndex = normalize( nextStartingIndex - 4 );
+	if( debugPoint )
+	{
+		printf("Sum turn %d, lasts (%d, %d)\n", sumTurns, lastLeft._x, lastLeft._y);
+		printf("firstBlackIndex: %d,   lastBlackIndex: %d\n", firstBlackIndex, lastBlackIndex );
+		printf("nextStartingIndex: %d\n", nextStartingIndex);
+	}
+
 	{
 		for(int i(0); i < _numPixelsString; ++i)
 		{
@@ -520,6 +516,19 @@ Cor SeismicProcess::processPixel( int x, int y, int selfValue, bool debugPoint, 
     double val = (255.0 / 180.0) * dist180;
 
 	uchar ucharVal = (uchar) val;
+
+	
+
+	if( debugPoint )
+	{
+		printf(" --------------- \n");
+		printf("difXright: %d, difYright: %d\n", difXright, difYright);
+		printf("difXleft: %d, difYleft: %d\n", difXleft, difYleft);
+		printf("tan1: %f, tan2: %f, ang1: %f, ang2: %f, difAng: %f, dist180: %f, val: %f\n", tan1, tan2, ang1, ang2, difAng, dist180, val);
+		printf("\n");
+	}
+
+
     return Cor( ucharVal, ucharVal, ucharVal );
 }
 
