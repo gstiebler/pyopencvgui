@@ -392,27 +392,6 @@ Cor SeismicProcess::processPixel( int x, int y, int selfValue, bool debugPoint, 
 				printf("left i: %d, blackIndex: %d, currX: %d, currY:%d, difX: %d, difY: %d, sumTurns: %d\n", i, blackIndex, curr, _vX[blackIndex], _vY[blackIndex], sumTurns);
 			}
 
-			// verifies if the pixel turned back to the first pixel
-			if( curr._x == x && curr._y == y && i > 0 )
-			{
-				if( sumTurns > 0 )
-				{
-					#ifdef DEBUG_COLORS
-						return azulClaro;
-					#else
-						return preto;
-					#endif
-				}
-				else
-				{
-					#ifdef DEBUG_COLORS
-						return azul;
-					#else
-						return branco;
-					#endif
-				}
-			}
-
 			lastBlackIndex = blackIndex;
 		}
 	}
@@ -465,17 +444,6 @@ Cor SeismicProcess::processPixel( int x, int y, int selfValue, bool debugPoint, 
 				#else
 					return preto;
 				#endif
-			}
-
-			// verifies if the pixel turned back to the first pixel
-			if( curr == lastLeft )
-			{
-				Cor ctemp = paintSumTurn(sumTurns,  x, y );
-
-				if( debugPoint )
-					printf("Right met lastLeft (%d, %d) %d\n", lastLeft._x, lastLeft._y, sumTurns);
-
-				return ctemp;
 			}
 			lastBlackIndex = blackIndex;
 
