@@ -56,6 +56,9 @@ class OutputPresenter:
         
         str = '(%d, %d) -\t (%d, %d, %d)' % (zoomed_x, zoomed_y, r, g, b)
         self.outputWindow.set_info_label(str)
+        
+    def save_image(self):
+        cv2.imwrite("c:/temp/image.bmp", self.currentImage)
 
     def __init__(self):
         self.zoomFactor = 1

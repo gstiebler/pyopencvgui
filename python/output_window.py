@@ -24,6 +24,9 @@ class OutputWindow:
     def set_info_label( self, label ):
         self.infoLabel.set_label( label )
         
+    def save_clicked(self, widget):
+        self.output_presenter.save_image()
+        
     def __init__(self, output_presenter):
         self.output_presenter = output_presenter
         self.gladeBuilder = gtk.glade.XML( "../glade/OutputWindow.glade", "mainWindow") 
@@ -33,6 +36,7 @@ class OutputWindow:
         self.infoLabel = self.gladeBuilder.get_widget("infoLabel")
         self.xSpin = self.gladeBuilder.get_widget("xSpin")
         self.ySpin = self.gladeBuilder.get_widget("ySpin")
+        self.saveButton = self.gladeBuilder.get_widget("saveButton")
         
         self.image = gtk.Image()
         self.eventBox = gtk.EventBox()
@@ -49,6 +53,7 @@ class OutputWindow:
         self.image.connect("motion-notify-event", self.on_mouse_move, None)
         self.xSpin.connect("value_changed", self.on_spin_changed, None )
         self.ySpin.connect("value_changed", self.on_spin_changed, None )
+        self.saveButton.connect("clicked", self.save_clicked)
         
         self.outputWindow.move( 50, 300 )
         self.outputWindow.show()
