@@ -1,3 +1,3 @@
 env = Environment()
 env.Replace(CFLAGS=['-O2','-Wall','-ansi','-pedantic'])
-env.SharedLibrary(target='myextension', source=['myextension.cpp', 'Image.cpp'])
+env.SharedLibrary(target='myextension', source=['../cpp/myextension.cpp', '../cpp/Image8Bits.cpp', '../cpp/ImageRGB.cpp', '../cpp/Edges.cpp'])
