@@ -1,10 +1,11 @@
 #include "Edges.h"
 
 #include <algorithm>  
+#include <math.h>
 
 using namespace std;
 
-__declspec(dllexport) void __stdcall hEdges(uchar *srcImgData, uchar *dstImgData, int height, int width, int thresh, int delta)
+EXPORT void CALL_CONV hEdges(uchar *srcImgData, uchar *dstImgData, int height, int width, int thresh, int delta)
 {
 	Image8Bits src(srcImgData, width, height);
 	ImageRGB dst(dstImgData, width, height);
@@ -23,7 +24,7 @@ __declspec(dllexport) void __stdcall hEdges(uchar *srcImgData, uchar *dstImgData
 	}
 }
 
-__declspec(dllexport) void __stdcall hEdgesMaxDif(uchar *srcImgData, uchar *dstImgData, int height, int width, int thresh, int delta)
+EXPORT void CALL_CONV hEdgesMaxDif(uchar *srcImgData, uchar *dstImgData, int height, int width, int thresh, int delta)
 {
 	Image8Bits src(srcImgData, width, height);
 	ImageRGB dst(dstImgData, width, height);
@@ -159,7 +160,7 @@ void getAB( std::vector<Point> points, double &a, double &b, double &stdDev )
 
 
 
-__declspec(dllexport) void __stdcall hEdgesMiddle(uchar *srcImgData, uchar *dstImgData, int height, int width, int *intStatsOutput, double *doubleStatsOutput,  
+EXPORT void CALL_CONV hEdgesMiddle(uchar *srcImgData, uchar *dstImgData, int height, int width, int *intStatsOutput, double *doubleStatsOutput,  
 												  int thresh, int delta, int minGreen, int minGray, int minRed)
 {
 	Image8Bits src(srcImgData, width, height);

@@ -15,7 +15,7 @@ using namespace std;
 
 extern "C" {
   
-__declspec(dllexport) void __stdcall myfunc(uchar *srcImgData, uchar *dstImgData, int height, int width, int thresh)
+EXPORT void CALL_CONV myfunc(uchar *srcImgData, uchar *dstImgData, int height, int width, int thresh)
 {
     printf("Largura %d, Altura %d\n", width, height);
     Image8Bits src(srcImgData, width, height);
@@ -36,7 +36,7 @@ __declspec(dllexport) void __stdcall myfunc(uchar *srcImgData, uchar *dstImgData
 
 
 
-__declspec(dllexport) void __stdcall seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width, int numPixelsString, int offset, int xD, int yD) 
+EXPORT void CALL_CONV seismicProcess(uchar *srcImgData, uchar *dstImgData, int height, int width, int numPixelsString, int offset, int xD, int yD) 
 {
 	SeismicProcess seismicProcess( srcImgData, dstImgData, height, width, numPixelsString, xD, yD );
 	seismicProcess.executar( offset );

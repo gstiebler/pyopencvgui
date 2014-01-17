@@ -1,6 +1,16 @@
 #ifndef BASE_H
 #define BASE_H
  
+#if defined(_MSC_VER)
+    //  Microsoft 
+    #define EXPORT __declspec(dllexport)
+	#define CALL_CONV __stdcall
+#else
+    //  GCC
+	#define CALL_CONV 
+    #define EXPORT __attribute__((visibility("default")))
+#endif
+
 typedef unsigned char uchar;
 typedef long int lint;
 

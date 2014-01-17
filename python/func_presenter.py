@@ -3,13 +3,16 @@ import cv2
 import numpy
 import ctypes
 import copy
+import platform
 
+from ctypes import *
 from class_factory import Factory
 from print_stats import PrintStats
 
-from ctypes import *
-# mylib = cdll.LoadLibrary("./libmyextension.so") 
-mylib = ctypes.WinDLL('../bin/imageProcessing.dll')
+if platform.system() == "Linux":
+	mylib = cdll.LoadLibrary("../bin/libmyextension.so") 
+else:
+	mylib = ctypes.WinDLL('../bin/imageProcessing.dll')
 
 def get_xml_text( node ):
     if node.length > 0:

@@ -1,6 +1,6 @@
 
-import cv2
 import numpy
+import cv2
 import os
 from xml.dom.minidom import parse, parseString
 
