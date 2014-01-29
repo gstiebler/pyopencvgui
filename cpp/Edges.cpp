@@ -15,7 +15,7 @@ EXPORT void CALL_CONV hEdges(uchar *srcImgData, uchar *dstImgData, int height, i
 	{
 		for( int i(0); i < src.getWidth() - delta; ++i)
 		{
-			dif = src.pix( i, j ) - src.pix( i + delta, j );
+			dif = src.getLum( i, j ) - src.getLum( i + delta, j );
 			if( dif > thresh )
 				dst.setRGB( i, j, 0x0, 0xFF, 0x0 );
 			else if( dif < -thresh )
@@ -37,7 +37,7 @@ EXPORT void CALL_CONV hEdgesMaxDif(uchar *srcImgData, uchar *dstImgData, int hei
 	{
 		for( int i(0); i < src.getWidth() - delta; ++i)
 		{
-			dif = src.pix( i, j ) - src.pix( i + delta, j );
+			dif = src.getLum( i, j ) - src.getLum( i + delta, j );
 			if( dif > thresh )
 			{
 				dst.setR( i, j, 0x0 );
@@ -91,7 +91,7 @@ void hEdges2(Image8Bits &src, ImageRGB &dst, int thresh, int delta)
 	{
 		for( int i(0); i < src.getWidth() - delta; ++i)
 		{
-			dif = src.pix( i, j ) - src.pix( i + delta, j );
+			dif = src.getLum( i, j ) - src.getLum( i + delta, j );
 			if( dif > thresh )
 			{
 				dst.setG( i, j, 0xFF );

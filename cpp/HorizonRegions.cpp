@@ -22,7 +22,7 @@ void HorizonRegions::initLums(Image8Bits &src)
 	{
 		for(int x(0); x < width; ++x)
 		{
-			lum = src.pix(x, y);
+			lum = src.getLum(x, y);
 			_lums[lum].push_back(Point(x, y));
 		}
 	}
@@ -55,9 +55,12 @@ void HorizonRegions::initDirections(char vX[8], char vY[8])
 
 void HorizonRegions::processPixels(Image8Bits &src, ImageRGB &dst)
 {
-	char vX[8], char vY[8];
+	char vX[8], vY[8];
 	initDirections(vX, vY);
-	RegionsManager regionsManager;
+	RegionsManager regionsManager( src.getWidth(), src.getHeight() );
+	Cor red(0xFF, 0x0, 0x0);
+	Cor black(0x0, 0x0, 0x0);
+	dst = src;
 
 	for(uchar lum(0); lum < 256; ++lum)
 	{
@@ -82,6 +85,8 @@ void HorizonRegions::processPixels(Image8Bits &src, ImageRGB &dst)
 				nRegions[0]->addPoint( point );
 			else
 			{
+				dst.setRGB( point, red );
+
 				for(int m(0); m < nRegions.size(); ++m)
 					for(int n(0); n < nRegions.size(); ++n)
 					{
@@ -97,6 +102,63 @@ void HorizonRegions::processPixels(Image8Bits &src, ImageRGB &dst)
 
 
 
+RegionsManager::RegionsManager( int width, int height ) :
+	_width( width ),
+	_height( height )
+{
+	_regionOfPixel = new Region ** [_height];
+	for(int y(0); y < _height; ++y)
+	{
+		_regionOfPixel[y] = new Region * [_width];
+		memset( _regionOfPixel[y], 0, _width * sizeof(Region*) );
+	}
+}
+
+
+
+RegionsManager::~RegionsManager()
+{
+	for(int y(0); y < _height; ++y)
+	{
+		for(int x(0); x < _width; ++x)
+			if(_regionOfPixel[y][x] )
+				delete [] _regionOfPixel[y][x];
+
+		delete [] _regionOfPixel[y];
+	}
+
+	delete [] _regionOfPixel;
+}
+
+
+
+Region* RegionsManager::getRegion( const Point &point )
+{
+	return _regionOfPixel[point._y][point._x];
+}
+
+
+
+void RegionsManager::setRegion( const Point &point, Region *region )
+{
+	_regionOfPixel[point._y][point._x] = region;
+}
+
+
+
+void RegionsManager::createRegion( const Point &point )
+{
+	(new Region( *this ))->addPoint( point );
+}
+
+
+
+void RegionsManager::mergeRegions( Region *region1, Region *region2 )
+{
+}
+
+
+
 Region::Region( RegionsManager regionsManager ) : 
 	_regionsManager( regionsManager )
 {
@@ -107,5 +169,8 @@ Region::Region( RegionsManager regionsManager ) :
 void Region::addPoint( const Point &point )
 {
 	_points.push_back( point );
-	_regionsManager.setRegion( point, *this );
+	_regionsManager.setRegion( point, this );
 }
+
+
+

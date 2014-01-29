@@ -7,10 +7,11 @@ class Image8Bits
 {
 public:
     Image8Bits(uchar *data, int width, int height);
-    uchar& pix(int i, int j);
+    uchar getLum(int i, int j) const;
     int getWidth() const;
     int getHeight() const;
 	void setLum( uchar lum );
+	void setLum(int i, int j, uchar lum);
     
 protected:
     uchar *_data;

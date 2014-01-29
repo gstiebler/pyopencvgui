@@ -8,9 +8,14 @@ Image8Bits::Image8Bits(uchar *data, int width, int height) :
 {
 }
 
-uchar& Image8Bits::pix(int i, int j)
+uchar Image8Bits::getLum(int i, int j) const
 {
     return _data[j * _width + i];
+}
+
+void Image8Bits::setLum(int i, int j, uchar lum) 
+{
+	_data[j * _width + i] = lum;
 }
 
 int Image8Bits::getWidth() const

@@ -26,10 +26,10 @@ EXPORT void CALL_CONV myfunc(uchar *srcImgData, uchar *dstImgData, int height, i
     {
         for(int j(0); j < src.getHeight(); ++j)
         {
-            if(src.pix(i, j) < uThresh)
-                dst.pix(i, j) = 0;
+            if(src.getLum(i, j) < uThresh)
+                dst.setLum(i, j, 0);
             else
-                dst.pix(i, j) = 255;
+                dst.setLum(i, j, 255);
         }
     }
 }
@@ -95,7 +95,7 @@ int SeismicProcess::findFirstWhite( int startIndex, char *vX, char *vY, Point &i
         if( xIndex == 0 || yIndex == 0 || xIndex == src.getWidth() || yIndex == src.getHeight() )
             break;
 
-        uchar currValue = src.pix( xIndex, yIndex );
+        uchar currValue = src.getLum( xIndex, yIndex );
 		if(currValue > selfValue /* || dst.getLum( xIndex, yIndex ) > DST_THRESH */ )
             return normalize(i);
     }    
@@ -124,7 +124,7 @@ int SeismicProcess::findFirstBlack( int startIndex, char *vX, char *vY, Point &i
         if( xIndex == 0 || yIndex == 0 || xIndex == src.getWidth() || yIndex == src.getHeight() )
             break;
 
-        uchar currValue = src.pix(xIndex, yIndex);
+        uchar currValue = src.getLum(xIndex, yIndex);
         if(currValue <= selfValue /* && dst.getLum( xIndex, yIndex ) < DST_THRESH */ )
             return normalize(i);
     }
@@ -272,7 +272,7 @@ void SeismicProcess::executar( int offset )
     {
         for(int x(1); x < src.getWidth() - 1; ++x)
         {    
-            uchar selfValue = src.pix(x, y);
+            uchar selfValue = src.getLum(x, y);
 
 			int value = selfValue + offset;
 

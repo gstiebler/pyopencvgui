@@ -44,10 +44,23 @@ private:
 };
 
 
+class Region;
 
 class RegionsManager
 {
 public:
+
+	/**
+	 * Constructor
+	 * @param[in] width Width of the source image
+	 * @param[in] height Height of the source image
+	 */
+	RegionsManager( int width, int height );
+
+	/**
+	 * Destructor
+	 */
+	~RegionsManager();
 
 	/**
 	 * Returns the region of a point
@@ -55,6 +68,13 @@ public:
 	 * @return The region of the point
 	 */
 	Region* getRegion( const Point &point );
+
+	/**
+	 * Sets the region of a point
+	 * @param[in] point The point of the region
+	 * @param[in] region The region of the point
+	 */
+	void setRegion( const Point &point, Region *region );
 
 	/**
 	 * Creates a region from a point
@@ -69,16 +89,16 @@ public:
 	 */
 	void mergeRegions( Region *region1, Region *region2 );
 
-	/**
-	 * Sets the region of a point
-	 * @param[in] point The point of the region
-	 * @param[in] region The region of the point
-	 */
-	void setRegion( const Point &point, const Region &region );
-
 private:
 
+	/** All the regions */
+	std::vector<Region*> _regions;
 
+	/** Region of each pixel */
+	Region ***_regionOfPixel;
+
+	int _width;
+	int _height;
 };
 
 

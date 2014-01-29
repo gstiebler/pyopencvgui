@@ -41,6 +41,11 @@ void ImageRGB::setRGB( int i, int j, const Cor &cor )
 	setRGB( i, j, cor.r, cor.g, cor.b );
 }
 
+void ImageRGB::setRGB( const Point &point, const Cor &cor )
+{
+	setRGB( point._x, point._y, cor );
+}
+
 void ImageRGB::setRGB( const Cor &cor )
 {
 	int size = _width * _height;
@@ -103,5 +108,12 @@ uchar ImageRGB::getLum( int i, int j )
 	uchar g = *p++;
 	uchar b = *p;
 	return r * 0.11 + g * 0.59 + b * 0.3;
+}
+
+void ImageRGB::operator=(const Image8Bits &image8bits)
+{
+	for(int y(0); y < _height; ++y)
+		for(int x(0); x < _width; ++x)
+			setLum( x, y, image8bits.getLum( x, y ) );
 }
 
