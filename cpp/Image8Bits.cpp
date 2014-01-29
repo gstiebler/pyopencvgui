@@ -13,12 +13,12 @@ uchar& Image8Bits::pix(int i, int j)
     return _data[j * _width + i];
 }
 
-int Image8Bits::getWidth()
+int Image8Bits::getWidth() const
 {
     return _width;
 }
 
-int Image8Bits::getHeight()
+int Image8Bits::getHeight() const
 {
     return _height;
 }

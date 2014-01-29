@@ -30,6 +30,9 @@
     <ClCompile Include="..\..\cpp\Edges.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\cpp\HorizonRegions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\cpp\Image8Bits.h">
@@ -45,6 +48,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\cpp\myextension.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\cpp\HorizonRegions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

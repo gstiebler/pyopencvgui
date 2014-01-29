@@ -8,8 +8,8 @@ class Image8Bits
 public:
     Image8Bits(uchar *data, int width, int height);
     uchar& pix(int i, int j);
-    int getWidth();
-    int getHeight();
+    int getWidth() const;
+    int getHeight() const;
 	void setLum( uchar lum );
     
 protected:

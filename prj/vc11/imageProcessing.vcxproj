@@ -83,12 +83,14 @@
   <ItemGroup>
     <ClInclude Include="..\..\cpp\base.h" />
     <ClInclude Include="..\..\cpp\Edges.h" />
+    <ClInclude Include="..\..\cpp\HorizonRegions.h" />
     <ClInclude Include="..\..\cpp\Image8Bits.h" />
     <ClInclude Include="..\..\cpp\ImageRGB.h" />
     <ClInclude Include="..\..\cpp\myextension.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\cpp\Edges.cpp" />
+    <ClCompile Include="..\..\cpp\HorizonRegions.cpp" />
     <ClCompile Include="..\..\cpp\Image8Bits.cpp" />
     <ClCompile Include="..\..\cpp\ImageRGB.cpp" />
     <ClCompile Include="..\..\cpp\myextension.cpp" />
