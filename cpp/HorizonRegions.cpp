@@ -94,3 +94,18 @@ void HorizonRegions::processPixels(Image8Bits &src, ImageRGB &dst)
 		}
 	}
 }
+
+
+
+Region::Region( RegionsManager regionsManager ) : 
+	_regionsManager( regionsManager )
+{
+}
+
+
+
+void Region::addPoint( const Point &point )
+{
+	_points.push_back( point );
+	_regionsManager.setRegion( point, *this );
+}
