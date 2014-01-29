@@ -15,7 +15,7 @@ public:
 	 * @param[in] src Source image
 	 * @param[out] dst Destination image
 	 */
-	HorizonRegions(Image8Bits &src, ImageRGB &dst);
+	HorizonRegions(Image8Bits &src, ImageRGB &dst, int maxHorizontalIntersection);
 
 private:
 
@@ -30,7 +30,7 @@ private:
 	 * @param[in] src Source image
 	 * @param[out] dst Destination image
 	 */
-	void processPixels(Image8Bits &src, ImageRGB &dst);
+	void processPixels(Image8Bits &src, ImageRGB &dst, int maxHorizontalIntersection);
 
 	/**
 	 * Initializes the direction vectors to the 8 neighbours of the pixels
@@ -87,7 +87,7 @@ public:
 	 * @param[in] region1 First region
 	 * @param[in] region2 Second region
 	 */
-	void mergeRegions( Region *region1, Region *region2 );
+	static void mergeRegions( Region *region1, Region *region2, int maxHorizontalIntersection );
 
 private:
 
@@ -97,7 +97,6 @@ private:
 	/** Region of each pixel */
 	Region ***_regionOfPixel;
 
-	int _width;
 	int _height;
 };
 
@@ -119,6 +118,16 @@ public:
 	 */
 	void addPoint( const Point &point );
 
+	void merge( Region *other );
+
+	int horizontalIntersection( Region *other );
+
+	Region* finalRegion();
+
+	int length();
+
+	int _xMin, _xMax;
+
 private:
 
 	/** The points of the region */
@@ -126,6 +135,10 @@ private:
 
 	/** The unique and only regions manager */
 	RegionsManager &_regionsManager;
+
+	bool _active;
+
+	Region *_mergedRegion;
 };
 
 #endif

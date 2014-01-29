@@ -4,10 +4,10 @@
 using namespace std;
 
 
-HorizonRegions::HorizonRegions(Image8Bits &src, ImageRGB &dst)
+HorizonRegions::HorizonRegions(Image8Bits &src, ImageRGB &dst, int maxHorizontalIntersection)
 {
 	initLums(src);
-	processPixels(src, dst);
+	processPixels(src, dst, maxHorizontalIntersection);
 }
 
 
@@ -53,7 +53,7 @@ void HorizonRegions::initDirections(char vX[8], char vY[8])
 
 
 
-void HorizonRegions::processPixels(Image8Bits &src, ImageRGB &dst)
+void HorizonRegions::processPixels(Image8Bits &src, ImageRGB &dst, int maxHorizontalIntersection)
 {
 	char vX[8], vY[8];
 	initDirections(vX, vY);
@@ -93,7 +93,7 @@ void HorizonRegions::processPixels(Image8Bits &src, ImageRGB &dst)
 						if(m == n)
 							continue;
 
-						regionsManager.mergeRegions( nRegions[m], nRegions[n] );
+						regionsManager.mergeRegions( nRegions[m], nRegions[n], maxHorizontalIntersection );
 					}
 			}
 		}
@@ -103,14 +103,13 @@ void HorizonRegions::processPixels(Image8Bits &src, ImageRGB &dst)
 
 
 RegionsManager::RegionsManager( int width, int height ) :
-	_width( width ),
 	_height( height )
 {
 	_regionOfPixel = new Region ** [_height];
 	for(int y(0); y < _height; ++y)
 	{
-		_regionOfPixel[y] = new Region * [_width];
-		memset( _regionOfPixel[y], 0, _width * sizeof(Region*) );
+		_regionOfPixel[y] = new Region * [width];
+		memset( _regionOfPixel[y], 0, width * sizeof(Region*) );
 	}
 }
 
@@ -119,15 +118,12 @@ RegionsManager::RegionsManager( int width, int height ) :
 RegionsManager::~RegionsManager()
 {
 	for(int y(0); y < _height; ++y)
-	{
-		for(int x(0); x < _width; ++x)
-			if(_regionOfPixel[y][x] )
-				delete [] _regionOfPixel[y][x];
-
 		delete [] _regionOfPixel[y];
-	}
 
 	delete [] _regionOfPixel;
+
+	for(int n(0); n < _regions.size(); ++n)
+		delete _regions[n];
 }
 
 
@@ -148,19 +144,35 @@ void RegionsManager::setRegion( const Point &point, Region *region )
 
 void RegionsManager::createRegion( const Point &point )
 {
-	(new Region( *this ))->addPoint( point );
+	Region *region = new Region( *this );
+	_regions.push_back( region );
+	region->addPoint( point );
 }
 
 
 
-void RegionsManager::mergeRegions( Region *region1, Region *region2 )
+void RegionsManager::mergeRegions( Region *region1, Region *region2, int maxHorizontalIntersection )
 {
+	region1 = region1->finalRegion();
+	region2 = region2->finalRegion();
+
+	if( region1 == region2 )
+		return;
+
+	if( region1->horizontalIntersection( region2 ) > maxHorizontalIntersection )
+		return;
+
+	region1->merge( region2 );
 }
 
 
 
 Region::Region( RegionsManager regionsManager ) : 
-	_regionsManager( regionsManager )
+	_regionsManager( regionsManager ),
+	_active( true ),
+	_xMin( 10000000 ),
+	_xMax( -1 ),
+	_mergedRegion( NULL )
 {
 }
 
@@ -169,8 +181,61 @@ Region::Region( RegionsManager regionsManager ) :
 void Region::addPoint( const Point &point )
 {
 	_points.push_back( point );
+	if( point._x < _xMin )
+		_xMin = point._x;
+
+	if( point._x > _xMax )
+		_xMax = point._x;
+
 	_regionsManager.setRegion( point, this );
 }
 
+
+
+void Region::merge( Region *other )
+{
+	_active = false;
+
+	for(int n(0); n < _points.size(); ++n)
+		_regionsManager.setRegion( _points[n], other );
+
+	other->_points.assign( _points.begin(), _points.end() );
+
+	_mergedRegion = other;
+}
+
+
+
+int Region::length()
+{
+	return _xMax - _xMin + 1;
+}
+
+
+
+int Region::horizontalIntersection( Region *other )
+{
+	int totalXMin = _xMin;
+	if( other->_xMin < totalXMin )
+		totalXMin = other->_xMin;
+
+	int totalXMax = _xMax;
+	if( other->_xMax > totalXMax )
+		totalXMax = other->_xMax;
+
+	int totalLength = totalXMax - totalXMin + 1;
+
+	return length() + other->length() - totalLength;
+}
+
+
+
+Region* Region::finalRegion()
+{
+	if( _active )
+		return this;
+	else
+		return _mergedRegion->finalRegion();
+}
 
 
