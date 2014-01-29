@@ -4,10 +4,23 @@
 using namespace std;
 
 
-HorizonRegions::HorizonRegions(Image8Bits &src, ImageRGB &dst, int maxHorizontalIntersection)
+extern "C" {
+
+EXPORT void CALL_CONV horizonRegionsExtern(uchar *srcImgData, uchar *dstImgData, int height, int width, int maxHorizontalIntersection) 
+{
+	Image8Bits srcImg( srcImgData, width, height );
+	ImageRGB dstImg( dstImgData, width, height );
+	HorizonRegions horizonRegions( srcImg );
+	horizonRegions.exec( srcImg, dstImg, maxHorizontalIntersection );
+}
+
+}
+
+
+
+HorizonRegions::HorizonRegions(Image8Bits &src)
 {
 	initLums(src);
-	processPixels(src, dst, maxHorizontalIntersection);
 }
 
 
@@ -18,9 +31,9 @@ void HorizonRegions::initLums(Image8Bits &src)
 	int height = src.getHeight();
 	uchar lum;
 
-	for(int y(0); y < height; ++y)
+	for(int y(1); y < height - 1; ++y)
 	{
-		for(int x(0); x < width; ++x)
+		for(int x(1); x < width - 1; ++x)
 		{
 			lum = src.getLum(x, y);
 			_lums[lum].push_back(Point(x, y));
@@ -53,7 +66,7 @@ void HorizonRegions::initDirections(char vX[8], char vY[8])
 
 
 
-void HorizonRegions::processPixels(Image8Bits &src, ImageRGB &dst, int maxHorizontalIntersection)
+void HorizonRegions::exec(Image8Bits &src, ImageRGB &dst, int maxHorizontalIntersection)
 {
 	char vX[8], vY[8];
 	initDirections(vX, vY);
@@ -144,7 +157,7 @@ void RegionsManager::setRegion( const Point &point, Region *region )
 
 void RegionsManager::createRegion( const Point &point )
 {
-	Region *region = new Region( *this );
+	Region *region = new Region( this );
 	_regions.push_back( region );
 	region->addPoint( point );
 }
@@ -167,7 +180,7 @@ void RegionsManager::mergeRegions( Region *region1, Region *region2, int maxHori
 
 
 
-Region::Region( RegionsManager regionsManager ) : 
+Region::Region( RegionsManager *regionsManager ) : 
 	_regionsManager( regionsManager ),
 	_active( true ),
 	_xMin( 10000000 ),
@@ -187,7 +200,7 @@ void Region::addPoint( const Point &point )
 	if( point._x > _xMax )
 		_xMax = point._x;
 
-	_regionsManager.setRegion( point, this );
+	_regionsManager->setRegion( point, this );
 }
 
 
@@ -197,7 +210,7 @@ void Region::merge( Region *other )
 	_active = false;
 
 	for(int n(0); n < _points.size(); ++n)
-		_regionsManager.setRegion( _points[n], other );
+		_regionsManager->setRegion( _points[n], other );
 
 	other->_points.assign( _points.begin(), _points.end() );
 
@@ -232,6 +245,8 @@ int Region::horizontalIntersection( Region *other )
 
 Region* Region::finalRegion()
 {
+	_ASSERT(this != _mergedRegion);
+
 	if( _active )
 		return this;
 	else

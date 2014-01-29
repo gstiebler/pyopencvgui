@@ -26,19 +26,32 @@
 				<upper>50</upper>
 			</param>
 			<param name="offset" type="int">
-				<value>-3</value>
+				<value>0</value>
 				<lower>-64</lower>
 				<upper>64</upper>
 			</param>
 			<param name="xDebug" type="int">
-				<value>87</value>
+				<value>5</value>
 				<lower>0</lower>
 				<upper>1000</upper>
 			</param>
 			<param name="yDebug" type="int">
-				<value>79</value>
+				<value>47</value>
 				<lower>0</lower>
 				<upper>1000</upper>
+			</param>
+		</params>
+    </function>
+<function name="horizonRegionsExtern">
+		<srcLib>mylib</srcLib>
+        <sourceDataType>8bits</sourceDataType>
+        <destDataType>RGB</destDataType>
+        <hasStats>no</hasStats>
+		<params>
+			<param name="maxHorizontalIntersection" type="int">
+				<value>10</value>
+				<lower>0</lower>
+				<upper>200</upper>
 			</param>
 		</params>
     </function>

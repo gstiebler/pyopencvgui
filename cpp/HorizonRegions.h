@@ -15,7 +15,14 @@ public:
 	 * @param[in] src Source image
 	 * @param[out] dst Destination image
 	 */
-	HorizonRegions(Image8Bits &src, ImageRGB &dst, int maxHorizontalIntersection);
+	HorizonRegions(Image8Bits &src);
+
+	/**
+	 * The main function of the class
+	 * @param[in] src Source image
+	 * @param[out] dst Destination image
+	 */
+	void exec(Image8Bits &src, ImageRGB &dst, int maxHorizontalIntersection);
 
 private:
 
@@ -24,13 +31,6 @@ private:
 	 * @param[in] src Source image
 	 */
 	void initLums(Image8Bits &src);
-
-	/**
-	 * The main function of the class
-	 * @param[in] src Source image
-	 * @param[out] dst Destination image
-	 */
-	void processPixels(Image8Bits &src, ImageRGB &dst, int maxHorizontalIntersection);
 
 	/**
 	 * Initializes the direction vectors to the 8 neighbours of the pixels
@@ -110,7 +110,7 @@ public:
 	 * Constructor
 	 * @param[in,out] regionsManager The unique and only regions manager
 	 */
-	Region( RegionsManager regionsManager );
+	Region( RegionsManager *regionsManager );
 
 	/**
 	 * Adds a point to the region
@@ -134,7 +134,7 @@ private:
 	std::vector<Point> _points;
 
 	/** The unique and only regions manager */
-	RegionsManager &_regionsManager;
+	RegionsManager *_regionsManager;
 
 	bool _active;
 
