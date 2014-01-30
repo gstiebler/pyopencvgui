@@ -53,6 +53,21 @@
 				<lower>0</lower>
 				<upper>200</upper>
 			</param>
+			<param name="maxLum" type="int">
+				<value>240</value>
+				<lower>-1</lower>
+				<upper>256</upper>
+			</param>
+			<param name="xDebug" type="int">
+				<value>9</value>
+				<lower>0</lower>
+				<upper>1000</upper>
+			</param>
+			<param name="yDebug" type="int">
+				<value>2</value>
+				<lower>0</lower>
+				<upper>1000</upper>
+			</param>
 		</params>
     </function>
     <function name="hEdges">

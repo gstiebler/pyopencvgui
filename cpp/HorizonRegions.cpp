@@ -6,12 +6,12 @@ using namespace std;
 
 extern "C" {
 
-EXPORT void CALL_CONV horizonRegionsExtern(uchar *srcImgData, uchar *dstImgData, int height, int width, int maxHorizontalIntersection) 
+EXPORT void CALL_CONV horizonRegionsExtern(uchar *srcImgData, uchar *dstImgData, int height, int width, int maxHorizontalIntersection, int maxLum, int xD, int yD) 
 {
 	Image8Bits srcImg( srcImgData, width, height );
 	ImageRGB dstImg( dstImgData, width, height );
 	HorizonRegions horizonRegions( srcImg );
-	horizonRegions.exec( srcImg, dstImg, maxHorizontalIntersection );
+	horizonRegions.exec( srcImg, dstImg, maxHorizontalIntersection, maxLum,  xD, yD );
 }
 
 }
@@ -66,16 +66,15 @@ void HorizonRegions::initDirections(char vX[8], char vY[8])
 
 
 
-void HorizonRegions::exec(Image8Bits &src, ImageRGB &dst, int maxHorizontalIntersection)
+void HorizonRegions::exec(Image8Bits &src, ImageRGB &dst, int maxHorizontalIntersection, int maxLum, int xD, int yD)
 {
 	char vX[8], vY[8];
 	initDirections(vX, vY);
 	RegionsManager regionsManager( src.getWidth(), src.getHeight() );
-	Cor red(0xFF, 0x0, 0x0);
 	Cor black(0x0, 0x0, 0x0);
 	dst = src;
 
-	for(uchar lum(0); lum < 256; ++lum)
+	for(uchar lum(0); lum < maxLum; ++lum)
 	{
 		vector<Point> &currentLums = _lums[lum];
 		int size = (int) currentLums.size();
@@ -84,12 +83,27 @@ void HorizonRegions::exec(Image8Bits &src, ImageRGB &dst, int maxHorizontalInter
 			Point &point = currentLums[n];
 			vector<Region*> nRegions;
 
+			if( point._x == xD && point._y == yD )
+				int x = 5;
+
+			bool hadRegionOnLast = false;
 			for(int k(0); k < 8; ++k)
 			{
 				Point nPoint(point._x + vX[k], point._y + vY[k]);
 				Region* region = regionsManager.getRegion( nPoint );
 				if( region != NULL )
-					nRegions.push_back( region );
+				{
+					if( !hadRegionOnLast )
+					{
+						nRegions.push_back( region );
+						
+						if( point._x == xD && point._y == yD )
+							printf( "Has neighbour region on: (%d, %d)\n", vX[k], vY[k] );
+					}
+					hadRegionOnLast = true;
+				}
+				else
+					hadRegionOnLast = false;
 			}
 
 			if( nRegions.size() == 0 )
@@ -98,19 +112,26 @@ void HorizonRegions::exec(Image8Bits &src, ImageRGB &dst, int maxHorizontalInter
 				nRegions[0]->addPoint( point );
 			else
 			{
-				dst.setRGB( point, red );
-
-				for(int m(0); m < nRegions.size(); ++m)
-					for(int n(0); n < nRegions.size(); ++n)
+				for(int p(0); p < nRegions.size(); ++p)
+					for(int q(0); q < nRegions.size(); ++q)
 					{
-						if(m == n)
+						if(p == q)
 							continue;
 
-						regionsManager.mergeRegions( nRegions[m], nRegions[n], maxHorizontalIntersection );
+						regionsManager.mergeRegions( nRegions[p], nRegions[q], point, maxHorizontalIntersection );
 					}
 			}
 		}
 	}
+
+	Cor red(0xFF, 0x0, 0x0);
+	for(int y(0); y < src.getHeight(); ++y)
+		for(int x(0); x < src.getWidth(); ++x)
+		{
+			Point point(x, y);
+			if( !regionsManager.getRegion( point ) )
+				dst.setRGB( point, red );
+		}
 }
 
 
@@ -164,18 +185,22 @@ void RegionsManager::createRegion( const Point &point )
 
 
 
-void RegionsManager::mergeRegions( Region *region1, Region *region2, int maxHorizontalIntersection )
+void RegionsManager::mergeRegions( Region *region1, Region *region2, Point &point, int maxHorizontalIntersection )
 {
 	region1 = region1->finalRegion();
 	region2 = region2->finalRegion();
 
 	if( region1 == region2 )
+	{
+		region2->addPoint( point );
 		return;
+	}
 
 	if( region1->horizontalIntersection( region2 ) > maxHorizontalIntersection )
 		return;
 
 	region1->merge( region2 );
+	region2->addPoint( point );
 }
 
 

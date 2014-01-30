@@ -22,7 +22,7 @@ public:
 	 * @param[in] src Source image
 	 * @param[out] dst Destination image
 	 */
-	void exec(Image8Bits &src, ImageRGB &dst, int maxHorizontalIntersection);
+	void exec(Image8Bits &src, ImageRGB &dst, int maxHorizontalIntersection, int maxLum, int xD, int yD);
 
 private:
 
@@ -87,7 +87,7 @@ public:
 	 * @param[in] region1 First region
 	 * @param[in] region2 Second region
 	 */
-	static void mergeRegions( Region *region1, Region *region2, int maxHorizontalIntersection );
+	static void mergeRegions( Region *region1, Region *region2, Point &point, int maxHorizontalIntersection );
 
 private:
 
