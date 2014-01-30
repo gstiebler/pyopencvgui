@@ -98,6 +98,8 @@ private:
 	Region ***_regionOfPixel;
 
 	int _height;
+
+	int _counter;
 };
 
 
@@ -110,7 +112,7 @@ public:
 	 * Constructor
 	 * @param[in,out] regionsManager The unique and only regions manager
 	 */
-	Region( RegionsManager *regionsManager );
+	Region( RegionsManager *regionsManager, int id );
 
 	/**
 	 * Adds a point to the region
@@ -124,9 +126,11 @@ public:
 
 	Region* finalRegion();
 
-	int length();
+	int length() const;
 
 	int _xMin, _xMax;
+
+	int _id;
 
 private:
 

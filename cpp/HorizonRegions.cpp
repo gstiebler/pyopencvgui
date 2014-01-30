@@ -1,5 +1,6 @@
 
 #include "HorizonRegions.h"
+#include <set>
 
 using namespace std;
 
@@ -74,14 +75,14 @@ void HorizonRegions::exec(Image8Bits &src, ImageRGB &dst, int maxHorizontalInter
 	Cor black(0x0, 0x0, 0x0);
 	dst = src;
 
-	for(uchar lum(0); lum < maxLum; ++lum)
+	for(int lum(0); lum < maxLum; ++lum)
 	{
 		vector<Point> &currentLums = _lums[lum];
 		int size = (int) currentLums.size();
 		for(int n(0); n < size; ++n)
 		{
 			Point &point = currentLums[n];
-			vector<Region*> nRegions;
+			set<Region*> nRegions;
 
 			if( point._x == xD && point._y == yD )
 				int x = 5;
@@ -95,10 +96,13 @@ void HorizonRegions::exec(Image8Bits &src, ImageRGB &dst, int maxHorizontalInter
 				{
 					if( !hadRegionOnLast )
 					{
-						nRegions.push_back( region );
+						nRegions.insert( region );
 						
 						if( point._x == xD && point._y == yD )
+						{
 							printf( "Has neighbour region on: (%d, %d)\n", vX[k], vY[k] );
+							printf( "Region limits: (%d, %d)\n", region->_xMin, region->_xMax );
+						}
 					}
 					hadRegionOnLast = true;
 				}
@@ -109,16 +113,17 @@ void HorizonRegions::exec(Image8Bits &src, ImageRGB &dst, int maxHorizontalInter
 			if( nRegions.size() == 0 )
 				regionsManager.createRegion( point );
 			else if ( nRegions.size() == 1 )
-				nRegions[0]->addPoint( point );
+				(*(nRegions.begin()))->addPoint( point );
 			else
 			{
-				for(int p(0); p < nRegions.size(); ++p)
-					for(int q(0); q < nRegions.size(); ++q)
+				set<Region*>::iterator it_p, it_q, end = nRegions.end();
+				for(it_p = nRegions.begin(); it_p != nRegions.end(); ++it_p)
+					for(it_q = nRegions.begin(); it_q != nRegions.end(); ++it_q)
 					{
-						if(p == q)
+						if(*it_p == *it_q)
 							continue;
 
-						regionsManager.mergeRegions( nRegions[p], nRegions[q], point, maxHorizontalIntersection );
+						regionsManager.mergeRegions( *it_p, *it_q, point, maxHorizontalIntersection );
 					}
 			}
 		}
@@ -137,7 +142,8 @@ void HorizonRegions::exec(Image8Bits &src, ImageRGB &dst, int maxHorizontalInter
 
 
 RegionsManager::RegionsManager( int width, int height ) :
-	_height( height )
+	_height( height ),
+	_counter( 0 )
 {
 	_regionOfPixel = new Region ** [_height];
 	for(int y(0); y < _height; ++y)
@@ -164,7 +170,11 @@ RegionsManager::~RegionsManager()
 
 Region* RegionsManager::getRegion( const Point &point )
 {
-	return _regionOfPixel[point._y][point._x];
+	Region *region = _regionOfPixel[point._y][point._x];
+	if( region )
+		return region->finalRegion();
+	else
+		return NULL;
 }
 
 
@@ -178,7 +188,7 @@ void RegionsManager::setRegion( const Point &point, Region *region )
 
 void RegionsManager::createRegion( const Point &point )
 {
-	Region *region = new Region( this );
+	Region *region = new Region( this, ++_counter );
 	_regions.push_back( region );
 	region->addPoint( point );
 }
@@ -191,10 +201,7 @@ void RegionsManager::mergeRegions( Region *region1, Region *region2, Point &poin
 	region2 = region2->finalRegion();
 
 	if( region1 == region2 )
-	{
-		region2->addPoint( point );
 		return;
-	}
 
 	if( region1->horizontalIntersection( region2 ) > maxHorizontalIntersection )
 		return;
@@ -205,8 +212,9 @@ void RegionsManager::mergeRegions( Region *region1, Region *region2, Point &poin
 
 
 
-Region::Region( RegionsManager *regionsManager ) : 
+Region::Region( RegionsManager *regionsManager, int id ) : 
 	_regionsManager( regionsManager ),
+	_id( id ),
 	_active( true ),
 	_xMin( 10000000 ),
 	_xMax( -1 ),
@@ -225,6 +233,8 @@ void Region::addPoint( const Point &point )
 	if( point._x > _xMax )
 		_xMax = point._x;
 
+	_ASSERT( length() <= _points.size() );
+
 	_regionsManager->setRegion( point, this );
 }
 
@@ -237,14 +247,20 @@ void Region::merge( Region *other )
 	for(int n(0); n < _points.size(); ++n)
 		_regionsManager->setRegion( _points[n], other );
 
-	other->_points.assign( _points.begin(), _points.end() );
+	other->_points.insert( other->_points.end(), _points.begin(), _points.end() );
+
+	if(_xMin < other->_xMin)
+		other->_xMin = _xMin;
+
+	if(_xMax > other->_xMax)
+		other->_xMax = _xMax;
 
 	_mergedRegion = other;
 }
 
 
 
-int Region::length()
+int Region::length() const
 {
 	return _xMax - _xMin + 1;
 }
